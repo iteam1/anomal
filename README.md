@@ -1,5 +1,7 @@
 # anomal
 
+- clone source `git clone https://github.com/openvinotoolkit/anomalib.git`
+
 *Note*
 
 [source](https://github.com/openvinotoolkit/anomalib/tree/main/anomalib)
