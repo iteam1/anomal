@@ -8,6 +8,13 @@
 
 [notebooks](https://github.com/openvinotoolkit/anomalib/tree/main/notebooks)
 
+[tutorials](https://openvinotoolkit.github.io/anomalib/tutorials/index.html)
+
+[guides](https://openvinotoolkit.github.io/anomalib/how_to_guides/index.html)
+
+[references](https://openvinotoolkit.github.io/anomalib/reference_guide/index.html)
+
+
 # references
 
 [Deep-Learning-Based Anomaly Detection with MVTec HALCON](https://www.youtube.com/watch?v=NI6ITCGMhjI)
@@ -27,7 +34,5 @@
 [docs](https://github.com/openvinotoolkit/anomalib/tree/main/docs)
 
 [anomalib](https://github.com/openvinotoolkit/anomalib)
-
-[tutorials](https://openvinotoolkit.github.io/anomalib/tutorials/index.html)
 
 [doc](https://openvinotoolkit.github.io/anomalib/)
