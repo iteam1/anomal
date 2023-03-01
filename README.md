@@ -4,22 +4,27 @@
 
 *Note*
 
-[pypi v0.4](https://pypi.org/project/anomalib/0.4.0rc2/)
+[kaggle notebook](https://www.kaggle.com/code/ipythonx/mvtec-ad-anomaly-detection-with-anomalib-library)
+
+[notebooks](https://github.com/openvinotoolkit/anomalib/tree/main/notebooks)
+
+# references
+
+[Deep-Learning-Based Anomaly Detection with MVTec HALCON](https://www.youtube.com/watch?v=NI6ITCGMhjI)
+
+[Anomalib: Inferences](https://www.youtube.com/watch?v=9KvIS4XgRtg&t=2s)
+
+[requirements](https://github.com/openvinotoolkit/anomalib/tree/main/requirements)
 
 [colab notebook](https://colab.research.google.com/drive/1K4a4z2iZGBNhWdmt9Aqdld7kTAxBfAmi?usp=sharing)
 
-[kaggle notebook](https://www.kaggle.com/code/ipythonx/mvtec-ad-anomaly-detection-with-anomalib-library)
+[pypi v0.4](https://pypi.org/project/anomalib/0.4.0rc2/)
 
 [source](https://github.com/openvinotoolkit/anomalib/tree/main/anomalib)
 
 [tools](https://github.com/openvinotoolkit/anomalib/tree/main/tools)
 
 [docs](https://github.com/openvinotoolkit/anomalib/tree/main/docs)
-
-[notebooks](https://github.com/openvinotoolkit/anomalib/tree/main/notebooks)
-
-[requirements](https://github.com/openvinotoolkit/anomalib/tree/main/requirements)
-# references
 
 [anomalib](https://github.com/openvinotoolkit/anomalib)
 
