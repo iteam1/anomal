@@ -17,6 +17,8 @@
 
 [anomalib](https://github.com/openvinotoolkit/anomalib)
 
+[tutorials](https://openvinotoolkit.github.io/anomalib/tutorials/index.html)
+
 [doc](https://openvinotoolkit.github.io/anomalib/)
 
 [pypi](https://pypi.org/project/anomalib/)
