@@ -1,8 +1,19 @@
 # anomal
 
+*Note*
+
+[source](https://github.com/openvinotoolkit/anomalib/tree/main/anomalib)
+
+[tools](https://github.com/openvinotoolkit/anomalib/tree/main/tools)
+
+[docs](https://github.com/openvinotoolkit/anomalib/tree/main/docs)
+
+[notebooks](https://github.com/openvinotoolkit/anomalib/tree/main/notebooks)
+
+[requirements](https://github.com/openvinotoolkit/anomalib/tree/main/requirements)
 # references
 
-[anomalib](https://github.com/ChuongLoc/anomalib)
+[anomalib](https://github.com/openvinotoolkit/anomalib)
 
 [doc](https://openvinotoolkit.github.io/anomalib/)
 
