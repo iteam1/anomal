@@ -21,4 +21,3 @@ Examples:
 
 Files:
 image_crop/top_crop.jpg
-pictures/top.jpg
