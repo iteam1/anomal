@@ -6,3 +6,4 @@ anomalib
 hazelnut_toy
 __pycache__
 .vscode
+.ipynb_checkpoints
