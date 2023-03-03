@@ -3,12 +3,12 @@ import cv2
 import shutil
 
 src = 'samples'
-path = os.path.join(src,'good')
+path = os.path.join(src,'A')
 if not os.path.exists(path):
     os.mkdir(path)
     print(path,' created!')
     
-path = os.path.join(src,'bad')
+path = os.path.join(src,'B')
 if not os.path.exists(path):
     os.mkdir(path)
     print(path,' created!')
@@ -31,10 +31,10 @@ for sample in samples:
         cv2.imshow('sample',resized)
         k = cv2.waitKey()
         if k == ord('g'):
-            shutil.move(path,os.path.join(src,'good'))
+            shutil.move(path,os.path.join(src,'A'))
             cv2.destroyAllWindows()
         elif k == ord('b'):
-            shutil.move(path,os.path.join(src,'bad'))
+            shutil.move(path,os.path.join(src,'B'))
             cv2.destroyAllWindows()
         elif k == ord('o'):
             shutil.move(path,os.path.join(src,'ooo'))
