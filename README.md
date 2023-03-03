@@ -1,6 +1,7 @@
 # anomal
 
 - clone source `git clone https://github.com/openvinotoolkit/anomalib.git`
+- install requirem
 
 *Note*
 
