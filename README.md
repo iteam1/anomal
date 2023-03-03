@@ -3,7 +3,7 @@
 - clone source: `git clone https://github.com/openvinotoolkit/anomalib.git`
 - install `anomalib`: `pip install anomalib==0.4.0`
 - install `wandb`: `pip install wandb`
-- train `python3 `
+- train `!python3 tools/train.py --config configs/cable_config.yaml`
 
 *Note*
 
