@@ -1,8 +1,8 @@
 dataset:
   name: floder #options: [mvtec, btech, folder]
-  format: hazelnut
+  format: custom
   path: ./datasets # path lead to categories
-  category: hazelnut_toy # name of your object's category etc laptop,grid contain the folders good and mask
+  category: cable # name of your object's category etc laptop,grid contain the folders good and mask
   task: segmentation # segmentation or classification
   train_batch_size: 4
   eval_batch_size: 4
