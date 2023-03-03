@@ -1,4 +1,4 @@
-Training machine:
+Training machine: 20.83
 user: greystone
 pass: greystone@ivaluate
 

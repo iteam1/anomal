@@ -2,7 +2,7 @@
 *.zip
 *.rar
 env
-anomalib
+# anomalib
 hazelnut_toy
 __pycache__
 .vscode
