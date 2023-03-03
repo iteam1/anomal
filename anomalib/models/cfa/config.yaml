@@ -1,9 +1,9 @@
 dataset:
   name: mvtec #options: [mvtec, btech, folder]
   format: mvtec
-  path: ./datasets/MVTec
-  category: bottle
-  task: segmentation
+  path: ./datasets/MVTec # path lead to categories
+  category: bottle # name of your object's category etc laptop,grid contain the folders good and mask
+  task: segmentation # segmentation or classification
   train_batch_size: 4
   eval_batch_size: 4
   inference_batch_size: 4
