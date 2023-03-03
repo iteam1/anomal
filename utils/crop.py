@@ -1,5 +1,4 @@
 '''
 Crop images for training
 '''
-
-imp
+import os
