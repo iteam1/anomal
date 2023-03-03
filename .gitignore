@@ -2,6 +2,7 @@
 *.zip
 *.rar
 env
+myconda
 # anomalib
 hazelnut_toy
 __pycache__
