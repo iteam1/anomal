@@ -1,4 +1,4 @@
-Training machine: 20.83
+Training machine: sftp://172.16.21.83/home/greystone/locchuong
 user: greystone
 pass: greystone@ivaluate
 
