@@ -1,8 +1,33 @@
 import os
 import cv2
 import numpy as np
-from anomalib.config import get_configurable_parameters
-from anomalib.data import get_datamodule
-from anomalib.models import get_model
-from anomalib.utils.callbacks import LoadModelCallback,get_callbacks
-from anomalib.utils.loggers import configure_logger, get_experiment_logger
+from anomalib.data.utils import generate_output_image_filename, get_image_filenames,read_image
+from anomalib.deploy import TorchInferencer,OpenVINOInferencer
+from anomalib.post_processing import Visualizer
+
+visualizer = Visualizer(mode="full", task="segmentation") #"classification", "detection", "segmentation"]
+
+# config_path = 'models/patchcore/mvtec/hazelnut/run/config.yaml'
+# weight_path = 'models/patchcore/mvtec/hazelnut/run/openvino/model.xml' # yml,onnx
+# meta_data_path = 'models/patchcore/mvtec/hazelnut/run/openvino/meta_data.json'
+# device = 'CPU' #["CPU", "GPU", "VPU"]
+#
+# inferencer = OpenVINOInferencer(
+#     config = config_path,
+#     path = weight_path,
+#     meta_data_path = meta_data_path,
+#     device = device
+# )
+
+config_path = 'models/patchcore/mvtec/hazelnut/run/config.yaml'
+model_path = 'models/patchcore/mvtec/hazelnut/run/weights/model.ckpt'
+inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
+
+if __name__ == "__main__":
+    # read image
+    image = cv2.imread('datasets/hazelnut/test/hole/000.png')
+    # predict
+    prediction = inferencer.predict(image=image)
+    output = visualizer.visualize_image(prediction)
+    #print(output.shape)
+    cv2.imwrite('output.png',output)
