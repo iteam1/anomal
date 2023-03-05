@@ -1,6 +1,7 @@
 *.tar
 *.zip
 *.rar
+*.whl
 env
 myconda
 # anomalib
