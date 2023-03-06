@@ -11,7 +11,7 @@ from anomalib.deploy import TorchInferencer, OpenVINOInferencer
 
 model_name = sys.argv[1]
 
-visualizer = Visualizer(mode="simple",task="segmentation")
+#visualizer = Visualizer(mode="simple",task="segmentation")
 
 # config_path = 'models/patchcore/mvtec/hazelnut/run/config.yaml'
 # weight_path = 'models/patchcore/mvtec/hazelnut/run/openvino/model.xml' # yml,onnx
