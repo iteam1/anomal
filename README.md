@@ -1,9 +1,14 @@
 # anomal
-
 - clone source: `git clone https://github.com/openvinotoolkit/anomalib.git`
 - install `anomalib`: `pip install anomalib==0.4.0`
 - install `wandb`: `pip install wandb`
 - train `sudo myconda/envs/myenv/bin/python tools/train.py --config configs/cable_config.yaml`
+
+# packages
+inference's requirements:
+- pytorch cpu `pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu`
+- opencv `pip install opencv-python`
+- openvino `pip install openvino-dev==2021.3.0`
 
 *Note*
 
