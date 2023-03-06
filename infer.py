@@ -1,9 +1,8 @@
 import os
 import cv2
 import numpy as np
-from anomalib.data.utils import generate_output_image_filename, get_image_filenames,read_image
-from anomalib.deploy import TorchInferencer,OpenVINOInferencer
 from anomalib.post_processing import Visualizer
+from anomalib.deploy import TorchInferencer,OpenVINOInferencer
 
 visualizer = Visualizer(mode="full", task="segmentation") #"classification", "detection", "segmentation"]
 
