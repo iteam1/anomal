@@ -4,9 +4,9 @@ dataset:
   path: ./datasets/MVTec # path lead to categories
   category: laptop # name of your object's category etc laptop,grid contain the folders good and mask
   task: segmentation # segmentation or classification
-  train_batch_size: 32 # 32,28
+  train_batch_size: 16 # 32,28
   eval_batch_size: 16 # 32,48
-  inference_batch_size: 4 # 32,48
+  inference_batch_size: 16 # 32,48
   num_workers: 8
   image_size: 224 # dimensions to which images are resized (mandatory)
   center_crop: null # dimensions to which images are center-cropped after resizing (optional)
