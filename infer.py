@@ -3,7 +3,7 @@ import sys
 import cv2
 import time
 import numpy as np
-from anomalib.post_processing import Visualizer
+#from anomalib.post_processing import Visualizer
 from anomalib.deploy import TorchInferencer, OpenVINOInferencer
 #from anomalib.post_processing.visualizer import Visualizer
 #from anomalib.deploy.inferencers.torch_inferencer import TorchInferencer
@@ -35,9 +35,9 @@ if __name__ == "__main__":
     image = cv2.imread('datasets/laptop/test/crack/005.png')
     # predict
     prediction = inferencer.predict(image=image)
-    output = visualizer.visualize_image(prediction)
-    output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
+    #output = visualizer.visualize_image(prediction)
+    #output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
     # print(output.shape)
-    cv2.imwrite('output.jpg',output)
+    #cv2.imwrite('output.jpg',output)
     end_time = time.time() - start_time
     print("Inference timing consumption:",end_time)
