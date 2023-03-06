@@ -1,10 +1,7 @@
 import os
 import cv2
 import numpy as np
-from anomalib.post_processing import Visualizer
 from anomalib.deploy import TorchInferencer,OpenVINOInferencer
-
-visualizer = Visualizer(mode="full", task="segmentation") #"classification", "detection", "segmentation"]
 
 # config_path = 'models/patchcore/mvtec/hazelnut/run/config.yaml'
 # weight_path = 'models/patchcore/mvtec/hazelnut/run/openvino/model.xml' # yml,onnx
@@ -18,15 +15,19 @@ visualizer = Visualizer(mode="full", task="segmentation") #"classification", "de
 #     device = device
 # )
 
-config_path = 'models/patchcore/mvtec/hazelnut/run/config.yaml'
-model_path = 'models/patchcore/mvtec/hazelnut/run/weights/model.ckpt'
+config_path = 'models/cflow/config.yaml'
+model_path = 'models/cflow/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 if __name__ == "__main__":
     # read image
-    image = cv2.imread('datasets/hazelnut/test/hole/000.png')
+    image = cv2.imread('datasets/laptop/test/crack/000.png')
+    print(image.shape)
     # predict
     prediction = inferencer.predict(image=image)
     output = visualizer.visualize_image(prediction)
     #print(output.shape)
+    cv2.imshow('output',output)
+    k = cv2.waitkey()
     cv2.imwrite('output.png',output)
+    cv2.destroyAllWindows()
