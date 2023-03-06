@@ -23,7 +23,7 @@ model:
   backbone: resnet50
   pre_trained: true
   layer: layer3
-  pooling_kernel_size: 2
+  pooling_kernel_size: 2 # 3
   pca_level: 0.97
   score_type: fre # nll: for Gaussian modeling, fre: pca feature reconstruction error
   project_path: ./results
