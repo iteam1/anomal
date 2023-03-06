@@ -26,9 +26,13 @@ model_path = 'models/fastflow/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 if __name__ == "__main__":
+    # Start counting time
+    start_time = time.time()
     image = cv2.imread('datasets/laptop/test/crack/002.png')
     # predict
     prediction = inferencer.predict(image=image)
     output = visualizer.visualize_image(prediction)
-    print(output.shape)
+    # print(output.shape)
     cv2.imwrite('output.jpg',output)
+    end_time = time.time() - start_time
+    print("Inference timing consumption:",end_time)
