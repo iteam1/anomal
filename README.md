@@ -4,12 +4,10 @@
 - install `wandb`: `pip install wandb`
 - train `sudo myconda/envs/myenv/bin/python tools/train.py --config configs/cable_config.yaml`
 - install training packages `sudo myconda/envs/myenv/bin/pip install -r requirements/openvino.txt`
-
 # packages
 inference's requirements:
 - pytorch cpu `pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu`
-- openvino `pip install openvino-dev==2021.3.0`
-- install requirements (ignore pytorch-gpu) `pip install -r requirements/base.txt`
+- anomalib pip `pip install anomalib==0.4.0`
 
 *Note*
 
