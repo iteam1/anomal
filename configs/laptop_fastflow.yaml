@@ -1,50 +1,56 @@
 dataset:
-  name: mvtec #options: [mvtec, btech, folder]
+  name: mvtec
   format: mvtec
-  path: ./datasets/MVTec # path lead to categories
-  category: laptop # name of your object's category etc laptop,grid contain the folders good and mask
-  task: segmentation # segmentation or classification
-  train_batch_size: 4 # 32,28
-  eval_batch_size: 4 # 32,48
-  inference_batch_size: 4 # 32,48
+  path: ./datasets/MVTec
+  task: segmentation
+  category: laptop
+  train_batch_size: 32
+  eval_batch_size: 32
   num_workers: 8
-  image_size: 224 # dimensions to which images are resized (mandatory)
+  image_size: 256 # dimensions to which images are resized (mandatory) options: [256, 256, 448, 384]
   center_crop: null # dimensions to which images are center-cropped after resizing (optional)
   normalization: imagenet # data distribution to which the images will be normalized: [none, imagenet]
   transform_config:
     train: null
     eval: null
   test_split_mode: from_dir # options: [from_dir, synthetic]
-  test_split_ratio: 0.3 # fraction of train images held out testing (usage depends on test_split_mode)
+  test_split_ratio: 0.2 # fraction of train images held out testing (usage depends on test_split_mode)
   val_split_mode: same_as_test # options: [same_as_test, from_test, synthetic]
   val_split_ratio: 0.5 # fraction of train/test images held out for validation (usage depends on val_split_mode)
+  tiling:
+    apply: false
+    tile_size: null
+    stride: null
+    remove_border_count: 0
+    use_random_tiling: False
+    random_tile_count: 16
 
 model:
-  name: cfa
-  backbone: wide_resnet50_2
-  gamma_c: 1
-  gamma_d: 1
-  num_nearest_neighbors: 3
-  num_hard_negative_features: 3
-  radius: 1e-5
-  lr: 1e-3
-  weight_decay: 5e-4
-  amsgrad: true
+  name: fastflow
+  backbone: resnet18 # options: [resnet18, wide_resnet50_2, cait_m48_448, deit_base_distilled_patch16_384]
+  pre_trained: true
+  flow_steps: 8 # options: [8, 8, 20, 20] - for each supported backbone
+  hidden_ratio: 1.0 # options: [1.0, 1.0, 0.16, 0.16] - for each supported backbone
+  conv3x3_only: True # options: [True, False, False, False] - for each supported backbone
+  lr: 0.001
+  weight_decay: 0.00001
   early_stopping:
-    patience: 5
+    patience: 3
     metric: pixel_AUROC
     mode: max
   normalization_method: min_max # options: [null, min_max, cdf]
 
 metrics:
   image:
+    - F1Score
     - AUROC
   pixel:
+    - F1Score
     - AUROC
   threshold:
-    adaptive: true
-    image_default: null
-    pixel_default: null
+    method: adaptive #options: [adaptive, manual]
+    manual_image: null
+    manual_pixel: null
 
 visualization:
   show_images: False # show images on the screen
@@ -54,7 +60,7 @@ visualization:
   mode: full # options: ["full", "simple"]
 
 project:
-  seed: 0
+  seed: 42
   path: ./results
 
 logging:
@@ -78,7 +84,7 @@ trainer:
   check_val_every_n_epoch: 1 # Don't validate before extracting features.
   fast_dev_run: false
   accumulate_grad_batches: 1
-  max_epochs: 30
+  max_epochs: 500
   min_epochs: null
   max_steps: -1
   min_steps: null

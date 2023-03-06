@@ -1,60 +1,54 @@
 dataset:
-  name: mvtec #options: [mvtec, btech, folder]
+  name: mvtec
   format: mvtec
-  path: ./datasets/MVTec # path lead to categories
-  category: laptop # name of your object's category etc laptop,grid contain the folders good and mask
+  path: ./datasets/MVTec
+  category: laptop
   task: segmentation # segmentation or classification
-  train_batch_size: 4 # 32,28
-  eval_batch_size: 4 # 32,48
-  inference_batch_size: 4 # 32,48
+  train_batch_size: 32
+  eval_batch_size: 32
   num_workers: 8
-  image_size: 224 # dimensions to which images are resized (mandatory)
+  image_size: 256 # dimensions to which images are resized (mandatory)
   center_crop: null # dimensions to which images are center-cropped after resizing (optional)
   normalization: imagenet # data distribution to which the images will be normalized: [none, imagenet]
   transform_config:
     train: null
     eval: null
   test_split_mode: from_dir # options: [from_dir, synthetic]
-  test_split_ratio: 0.3 # fraction of train images held out testing (usage depends on test_split_mode)
+  test_split_ratio: 0.2 # fraction of train images held out testing (usage depends on test_split_mode)
   val_split_mode: same_as_test # options: [same_as_test, from_test, synthetic]
   val_split_ratio: 0.5 # fraction of train/test images held out for validation (usage depends on val_split_mode)
 
 model:
-  name: cfa
-  backbone: wide_resnet50_2
-  gamma_c: 1
-  gamma_d: 1
-  num_nearest_neighbors: 3
-  num_hard_negative_features: 3
-  radius: 1e-5
-  lr: 1e-3
-  weight_decay: 5e-4
-  amsgrad: true
-  early_stopping:
-    patience: 5
-    metric: pixel_AUROC
-    mode: max
+  name: dfkde
+  # feature extraction params
+  backbone: resnet18
+  layers:
+    - layer4
+  pre_trained: true
+  # density estimation params
+  n_pca_components: 16
+  max_training_points: 40000
+  feature_scaling_method: scale # Determines how the feature embeddings are scaled. Options: [scale, norm]
+  # generic params
   normalization_method: min_max # options: [null, min_max, cdf]
 
 metrics:
   image:
-    - AUROC
-  pixel:
+    - F1Score
     - AUROC
   threshold:
-    adaptive: true
-    image_default: null
-    pixel_default: null
+    method: adaptive #options: [adaptive, manual]
+    manual_image: null
 
 visualization:
   show_images: False # show images on the screen
-  save_images: True # save images to the file system
-  log_images: True # log images to the available loggers (if any)
+  save_images: False # save images to the file system
+  log_images: False # log images to the available loggers (if any)
   image_save_path: null # path to which images will be saved
   mode: full # options: ["full", "simple"]
 
 project:
-  seed: 0
+  seed: 42
   path: ./results
 
 logging:
@@ -63,7 +57,6 @@ logging:
 
 optimization:
   export_mode: null #options: onnx, openvino
-
 # PL Trainer Args. Don't add extra parameter here.
 trainer:
   enable_checkpointing: true
@@ -78,7 +71,7 @@ trainer:
   check_val_every_n_epoch: 1 # Don't validate before extracting features.
   fast_dev_run: false
   accumulate_grad_batches: 1
-  max_epochs: 30
+  max_epochs: 1
   min_epochs: null
   max_steps: -1
   min_steps: null
