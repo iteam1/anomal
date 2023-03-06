@@ -24,7 +24,6 @@ inference's requirements:
 [references](https://openvinotoolkit.github.io/anomalib/reference_guide/index.html)
 
 [notebooks](https://github.com/openvinotoolkit/anomalib/tree/main/notebooks)
-
 # references
 
 [Deep-Learning-Based Anomaly Detection with MVTec HALCON](https://www.youtube.com/watch?v=NI6ITCGMhjI)
