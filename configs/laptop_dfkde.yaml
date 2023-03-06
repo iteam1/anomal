@@ -99,3 +99,4 @@ trainer:
   plugins: null
   move_metrics_to_cpu: false
   multiple_trainloader_mode: max_size_cycle
+

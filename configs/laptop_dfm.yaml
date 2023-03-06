@@ -23,8 +23,8 @@ model:
   backbone: resnet50
   pre_trained: true
   layer: layer3
-  pooling_kernel_size: 2 # 3
-  pca_level: 0.97
+  pooling_kernel_size: 1
+  pca_level: 0.99
   score_type: fre # nll: for Gaussian modeling, fre: pca feature reconstruction error
   project_path: ./results
   normalization_method: min_max # options: [null, min_max, cdf]
@@ -57,7 +57,7 @@ logging:
   log_graph: false # Logs the model graph to respective logger.
 
 optimization:
-  export_mode: null #options: onnx, openvino
+  export_mode: openvino #options: onnx, openvino
 # PL Trainer Args. Don't add extra parameter here.
 trainer:
   enable_checkpointing: true
