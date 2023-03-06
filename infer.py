@@ -16,11 +16,10 @@ path = 'datasets/laptop/test/crack'
 # visualizer
 visualizer = Visualizer(mode="simple",task="segmentation")
 
-# config_path = 'models/patchcore/mvtec/hazelnut/run/config.yaml'
-# weight_path = 'models/patchcore/mvtec/hazelnut/run/openvino/model.xml' # yml,onnx
-# meta_data_path = 'models/patchcore/mvtec/hazelnut/run/openvino/meta_data.json'
+# config_path = 'models/dfm/mvtec/laptop/run/config.yaml'
+# weight_path = 'models/dfm/mvtec/laptop/run/openvino/model.onnx'
+# meta_data_path = 'models/dfm/mvtec/laptop/run/openvino/meta_data.json'
 # device = 'CPU' #["CPU", "GPU", "VPU"]
-
 # inferencer = OpenVINOInferencer(
 #     config = config_path,
 #     path = weight_path,
@@ -31,7 +30,6 @@ visualizer = Visualizer(mode="simple",task="segmentation")
 config_path = f'models/{model_name}/mvtec/laptop/run/config.yaml'
 model_path = f'models/{model_name}/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
-
 
 images = os.listdir(path)
 image = random.choice(images)
