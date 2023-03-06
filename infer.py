@@ -4,10 +4,10 @@ import cv2
 import time
 import random
 import numpy as np
-from anomalib.post_processing import Visualizer
-from anomalib.deploy import TorchInferencer, OpenVINOInferencer
-#from anomalib.post_processing.visualizer import Visualizer
-#from anomalib.deploy.inferencers.torch_inferencer import TorchInferencer
+#from anomalib.post_processing import Visualizer
+#from anomalib.deploy import TorchInferencer, OpenVINOInferencer
+from anomalib.post_processing.visualizer import Visualizer
+from anomalib.deploy.inferencers.torch_inferencer import TorchInferencer
 #from anomalib.deploy.inferencers.openvino_inferencer import OpenVINOInferencer
 
 model_name = sys.argv[1]
