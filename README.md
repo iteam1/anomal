@@ -8,8 +8,8 @@
 # packages
 inference's requirements:
 - pytorch cpu `pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu`
-- opencv `pip install opencv-python`
 - openvino `pip install openvino-dev==2021.3.0`
+- install requirements (ignore pytorch-gpu) `pip install -r requirements/base.txt`
 
 *Note*
 

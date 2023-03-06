@@ -1,3 +1,4 @@
+# for training enviroment
 #!usr/bin/bash
 
 MYCONDA="myconda"

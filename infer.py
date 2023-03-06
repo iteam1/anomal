@@ -1,7 +1,8 @@
 import os
 import cv2
 import numpy as np
-from anomalib.deploy import TorchInferencer,OpenVINOInferencer
+#from anomalib.deploy.inferencers.torch_inferencer import TorchInferencer
+from anomalib.deploy.inferencers.openvino_inferencer import OpenVINOInferencer
 
 # config_path = 'models/patchcore/mvtec/hazelnut/run/config.yaml'
 # weight_path = 'models/patchcore/mvtec/hazelnut/run/openvino/model.xml' # yml,onnx
@@ -15,19 +16,9 @@ from anomalib.deploy import TorchInferencer,OpenVINOInferencer
 #     device = device
 # )
 
-config_path = 'models/cflow/config.yaml'
-model_path = 'models/cflow/weights/model.ckpt'
-inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
+# config_path = 'models/fastflow/mvtec/laptop/run/config.yaml'
+# model_path = 'models/fastflow/mvtec/laptop/run/weights/model.ckpt'
+# inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 if __name__ == "__main__":
-    # read image
-    image = cv2.imread('datasets/laptop/test/crack/000.png')
-    print(image.shape)
-    # predict
-    prediction = inferencer.predict(image=image)
-    output = visualizer.visualize_image(prediction)
-    #print(output.shape)
-    cv2.imshow('output',output)
-    k = cv2.waitkey()
-    cv2.imwrite('output.png',output)
-    cv2.destroyAllWindows()
+    pass
