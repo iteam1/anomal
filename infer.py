@@ -1,12 +1,13 @@
 import os
 import cv2
+import time
 import numpy as np
 from anomalib.post_processing import Visualizer
 from anomalib.deploy import TorchInferencer
 #from anomalib.deploy.inferencers.torch_inferencer import TorchInferencer
 #from anomalib.deploy.inferencers.openvino_inferencer import OpenVINOInferencer
 
-#visualizer = Visualizer(mode="full",task="segmentation")
+visualizer = Visualizer(mode="full",task="segmentation")
 
 # config_path = 'models/patchcore/mvtec/hazelnut/run/config.yaml'
 # weight_path = 'models/patchcore/mvtec/hazelnut/run/openvino/model.xml' # yml,onnx
@@ -28,8 +29,6 @@ if __name__ == "__main__":
     image = cv2.imread('datasets/laptop/test/crack/002.png')
     # predict
     prediction = inferencer.predict(image=image)
-    #output = visualizer.visualize_image(prediction)
-    #print(output.shape)
-    #cv2.imshow('output',output)
-    k = cv2.waitKey()
-    cv2.destroyAllWindows()
+    output = visualizer.visualize_image(prediction)
+    print(output.shape)
+    cv2.imwrite('output.jpg',output)
