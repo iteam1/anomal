@@ -22,8 +22,8 @@ visualizer = Visualizer(mode="simple",task="segmentation")
 #     device = device
 # )
 
-config_path = 'models//mvtec/laptop/run/config.yaml'
-model_path = 'models/cfa2/mvtec/laptop/run/weights/model.ckpt'
+config_path = 'models/padim/mvtec/laptop/run/config.yaml'
+model_path = 'models/padim/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 if __name__ == "__main__":
