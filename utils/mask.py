@@ -1,6 +1,6 @@
 '''
 create mask
-CMD: python3 utils/mask.py assets/mask
+CMD: python3 utils/mask.py mask
 '''
 import os
 import sys
