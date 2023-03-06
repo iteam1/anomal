@@ -12,6 +12,7 @@ from anomalib.deploy import TorchInferencer, OpenVINOInferencer
 
 model_name = sys.argv[1]
 path = 'datasets/laptop/test/crack'
+DIM = 512
 
 # visualizer
 visualizer = Visualizer(mode="simple",task="segmentation")
@@ -31,19 +32,31 @@ config_path = f'models/{model_name}/mvtec/laptop/run/config.yaml'
 model_path = f'models/{model_name}/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
-images = os.listdir(path)
-image = random.choice(images)
+# images = os.listdir(path)
+# image = random.choice(images)
+
+image = 'samples/crack/04052022004214_top_crop.jpg'
 
 if __name__ == "__main__":
     # Start counting time
     start_time = time.time()
-    img = cv2.imread(os.path.join(path,image))
-    # print(img.shape)
-    # predict
-    prediction = inferencer.predict(image=img)
+    #img = cv2.imread(os.path.join(path,image))
+    img = cv2.imread(image)
+    h,w,_ = img.shape
+    top_left = img[0:DIM,0:DIM]
+    top_right = img[0:DIM,w-DIM:w]
+    
+    # predict top left
+    prediction = inferencer.predict(image=top_left)
     output = visualizer.visualize_image(prediction)
     output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
-    # print(output.shape)
-    cv2.imwrite('output.jpg',output)
+    cv2.imwrite('top_left_infer.jpg',output)
+    
+    # predict top left
+    prediction = inferencer.predict(image=top_right)
+    output = visualizer.visualize_image(prediction)
+    output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
+    cv2.imwrite('infer_top_right_infer.jpg',output)
+    
     end_time = time.time() - start_time
     print("Inference timing consumption:",end_time)
