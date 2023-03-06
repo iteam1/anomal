@@ -3,6 +3,7 @@
 - install `anomalib`: `pip install anomalib==0.4.0`
 - install `wandb`: `pip install wandb`
 - train `sudo myconda/envs/myenv/bin/python tools/train.py --config configs/cable_config.yaml`
+- install training packages `sudo myconda/envs/myenv/bin/pip install -r requirements/openvino.txt`
 
 # packages
 inference's requirements:
