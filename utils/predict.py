@@ -67,7 +67,7 @@ def visualize(args,model,prediction):
             pred_label = "Anomalous"
         else:
             pred_label = "Normal"
-        output = prediction.heat_map
+        output = prediction.segmentations #prediction.heat_map
     elif (model == 'reverse_distillation' or model == 'stfpm'):
         if pred_label:
             pred_label = "Anomalous"
@@ -75,7 +75,7 @@ def visualize(args,model,prediction):
             pred_label = "Normal"
         output = prediction.segmentations
     else:
-        output = prediction.heat_map
+        output = prediction.segmentations #prediction.heat_map
     # post process heatmap
     h,w,c = output.shape
     org = (5,h-20)
