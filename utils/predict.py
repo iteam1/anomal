@@ -68,7 +68,7 @@ def visualize(args,model,prediction):
         else:
             pred_label = "Normal"
         output = prediction.heat_map
-    elif (model == 'reverse_distillation' or model == 'stfpm') and args.openvino:
+    elif (model == 'reverse_distillation' or model == 'stfpm'):
         if pred_label:
             pred_label = "Anomalous"
         else:
