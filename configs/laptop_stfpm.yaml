@@ -2,10 +2,11 @@ dataset:
   name: mvtec
   format: mvtec
   path: ./datasets/MVTec
-  category: laptop
+  category: bottle
   task: segmentation
-  train_batch_size: 8
+  train_batch_size: 32
   eval_batch_size: 32
+  inference_batch_size: 32
   num_workers: 8
   image_size: 256 # dimensions to which images are resized (mandatory)
   center_crop: null # dimensions to which images are center-cropped after resizing (optional)
@@ -26,16 +27,20 @@ dataset:
     random_tile_count: 16
 
 model:
-  name: draem
-  anomaly_source_path: null # optional, e.g. ./datasets/dtd
-  lr: 0.0001
-  enable_sspcab: false
-  sspcab_lambda: 0.1
+  name: stfpm
+  backbone: resnet18
+  layers:
+    - layer1
+    - layer2
+    - layer3
+  lr: 0.4
+  momentum: 0.9
+  weight_decay: 0.0001
   early_stopping:
-    patience: 20
+    patience: 5
     metric: pixel_AUROC
     mode: max
-  normalization_method: min_max # options: [none, min_max, cdf]
+  normalization_method: min_max # options: [null, min_max, cdf]
 
 metrics:
   image:
@@ -57,7 +62,7 @@ visualization:
   mode: full # options: ["full", "simple"]
 
 project:
-  seed: 42
+  seed: 0
   path: ./results
 
 logging:
@@ -80,7 +85,7 @@ trainer:
   check_val_every_n_epoch: 1 # Don't validate before extracting features.
   fast_dev_run: false
   accumulate_grad_batches: 1
-  max_epochs: 700
+  max_epochs: 100
   min_epochs: null
   max_steps: -1
   min_steps: null
