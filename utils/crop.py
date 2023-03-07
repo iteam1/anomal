@@ -14,7 +14,7 @@ tmp = sys.argv[2]
 dst = 'datasets'
 cat = 'laptop'
 
-DIM = 512
+DIM = 256 #512
 n = [1,2,3]
 count = 0
 
