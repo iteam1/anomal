@@ -11,7 +11,7 @@ from anomalib.deploy import TorchInferencer, OpenVINOInferencer
 #from anomalib.deploy.inferencers.openvino_inferencer import OpenVINOInferencer
 
 model_name = sys.argv[1]
-path = 'datasets/laptop/test/crack'
+path = 'samples/crack'
 DIM = 256
 
 # visualizer
@@ -32,16 +32,13 @@ config_path = f'model/{model_name}/mvtec/laptop/run/config.yaml'
 model_path = f'model/{model_name}/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
-# images = os.listdir(path)
-# image = random.choice(images)
-
-image = 'samples/crack/09062022091124_top_crop.jpg'
+images = os.listdir(path)
+image = random.choice(images)
 
 if __name__ == "__main__":
     # Start counting time
     start_time = time.time()
-    #img = cv2.imread(os.path.join(path,image))
-    img = cv2.imread(image)
+    img = cv2.imread(os.path.join(path,image))
     h,w,_ = img.shape
     top_left = img[0:DIM,0:DIM]
     top_right = img[0:DIM,w-DIM:w]
