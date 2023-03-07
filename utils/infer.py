@@ -5,7 +5,8 @@ import time
 import random
 import numpy as np
 from argparse import ArgumentParser,Namespace
-from anomalib.post_processing import Visualizer
+from anomalib.post_processing import ImageResult
+#from anomalib.post_processing import Visualizer
 from anomalib.deploy import TorchInferencer, OpenVINOInferencer
 
 def get_args() -> Namespace:
@@ -22,6 +23,37 @@ def get_args() -> Namespace:
     args = parser.parse_args()
     return args
 
+def visualize(prediction):
+    '''
+    Handle model prediction
+    '''
+    # font
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    # fontScale
+    fontScale = 1
+    # Blue color in BGR
+    color = (255, 0, 0)
+    # Line thickness of 2 px
+    thickness = 2
+    # Extract prediction's components
+    anomaly_map = prediction.anomaly_map # anomaly map np.array (256,256)
+    box_labels = prediction.box_labels
+    gt_boxes = prediction.gt_boxes
+    gt_mask = prediction.gt_mask
+    heat_map = prediction.heat_map # head map np.array (256,256,3)
+    image = prediction.image  # orignal image np.array (256,256,3)
+    pred_boxes = prediction.pred_boxes
+    pred_label = prediction.pred_label # Predict label Normal,Anomalous
+    pred_mask = prediction.pred_mask # binary map np.array (256,256)
+    pred_score = prediction.pred_score # predict score (0.0-1.0)
+    segmentations = prediction.segmentations
+    # post process heatmap
+    h,w,c = heat_map.shape
+    org = (5,h-20)
+    text = pred_label + ":" + str(pred_score)
+    heat_map = cv2.putText(heat_map,text, org, font, fontScale, color, thickness, cv2.LINE_AA)
+    return heat_map
+
 # initialize
 args = get_args()
 model_name = args.model
@@ -29,7 +61,7 @@ path = args.path
 DIM = args.dim
 
 # visualizer
-visualizer = Visualizer(mode="simple",task="segmentation")
+# visualizer = Visualizer(mode="simple",task="segmentation")
 # directory of ouput image
 image_path = f'results/{model_name}/mvtec/laptop/run/images'
 
@@ -57,17 +89,9 @@ if __name__ == "__main__":
 
     # predict top left
     prediction = inferencer.predict(image=top_left)
-    # output = visualizer.visualize_image(prediction)
-    # output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
-    # path = os.path.join(image_path,'top_left_infer.jpg')
-    # cv2.imwrite(path,output)
-
-    # predict top left
-    prediction = inferencer.predict(image=top_right)
-    # output = visualizer.visualize_image(prediction)
-    # output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
-    # path = os.path.join(image_path,'top_right_infer.jpg')
-    # cv2.imwrite(path,output)
+    output = visualize(prediction)
+    path = os.path.join(image_path,'top_left.jpg')
+    cv2.imwrite(path,output)
 
     end_time = time.time() - start_time
     print("Inference timing consumption:",end_time)
