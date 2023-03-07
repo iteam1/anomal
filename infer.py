@@ -12,7 +12,7 @@ from anomalib.deploy import TorchInferencer, OpenVINOInferencer
 
 model_name = sys.argv[1]
 path = 'datasets/laptop/test/crack'
-DIM = 512
+DIM = 256
 
 # visualizer
 visualizer = Visualizer(mode="simple",task="segmentation")
@@ -35,7 +35,7 @@ inferencer = TorchInferencer(config=config_path,model_source=model_path,device =
 # images = os.listdir(path)
 # image = random.choice(images)
 
-image = 'assets/04052022064602_top_crop.jpg'
+image = 'samples/crack/09062022091124_top_crop.jpg'
 
 if __name__ == "__main__":
     # Start counting time
