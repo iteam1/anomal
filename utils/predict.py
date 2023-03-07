@@ -129,18 +129,20 @@ if __name__ == "__main__":
         output,pred,score = visualize(args,model_name,prediction)
         if pred == "Anomalous" and score > ANORMAL_THRESHOLD:
             anormal +=1
+            name = 'top_left_'+image
+            cv2.imwrite(os.path.join(image_path,name),output)
         else:
             normal +=1
-        cv2.imwrite(os.path.join(image_path,f'top_left_{i}.jpg'),output)
             
         # predict top right
         prediction = inferencer.predict(image=top_right)
         output,pred,score = visualize(args,model_name,prediction)
         if pred == "Anomalous" and score > ANORMAL_THRESHOLD:
             anormal +=1
+            name = 'top_right_'+image
+            cv2.imwrite(os.path.join(image_path,name),output)
         else:
             normal +=1
-        cv2.imwrite(os.path.join(image_path,f'top_right_{i}.jpg'),output)
 
         end_time = time.time() - start_time
         print(i,"Inference timing consumption (s):",end_time)
