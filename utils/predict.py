@@ -34,6 +34,8 @@ def visualize(args,model,prediction):
         prediction: prediction
     Return:
         output: post processed image (heat map or segmentation)
+        pred_label: prediction label
+        pred_score: prediction score
     '''
     # font
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -82,13 +84,17 @@ def visualize(args,model,prediction):
     text = pred_label + ":" + str(round(pred_score,2))
     output = cv2.putText(output,text, org, font, fontScale, color, thickness, cv2.LINE_AA)
     output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
-    return output
+    return output,pred_label,pred_score
 
 # initialize
 args = get_args()
 model_name = args.model
 path = args.path
 DIM = args.dim
+NORMAL_THRESHOLD = 0.6
+ANORMAL_THRESHOLD = 0.65
+normal = 0
+anormal = 0
 
 # visualizer
 # visualizer = Visualizer(mode="simple",task="segmentation")
@@ -109,6 +115,7 @@ else:
 images = os.listdir(path)
 
 if __name__ == "__main__":
+
     for i,image in enumerate(images):
         # Start counting time
         start_time = time.time()
@@ -119,13 +126,27 @@ if __name__ == "__main__":
 
         # predict top left
         prediction = inferencer.predict(image=top_left)
-        output = visualize(args,model_name,prediction)
+        output,pred,score = visualize(args,model_name,prediction)
+        if pred == "Anomalous" and score > ANORMAL_THRESHOLD:
+            anormal +=1
+        else:
+            normal +=1
         cv2.imwrite(os.path.join(image_path,f'top_left_{i}.jpg'),output)
-        
+            
         # predict top right
         prediction = inferencer.predict(image=top_right)
-        output = visualize(args,model_name,prediction)
+        output,pred,score = visualize(args,model_name,prediction)
+        if pred == "Anomalous" and score > ANORMAL_THRESHOLD:
+            anormal +=1
+        else:
+            normal +=1
         cv2.imwrite(os.path.join(image_path,f'top_right_{i}.jpg'),output)
 
         end_time = time.time() - start_time
-        print("Inference timing consumption (s):",end_time)
+        print(i,"Inference timing consumption (s):",end_time)
+    
+    # Summary
+    print("total image:",len(images))
+    print("total predictions",len(images)*2)
+    print("total nomal:",normal)
+    print("total anomal:",anormal)
