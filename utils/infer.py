@@ -23,10 +23,11 @@ def get_args() -> Namespace:
     args = parser.parse_args()
     return args
 
-def visualize(model,prediction):
+def visualize(args,model,prediction):
     '''
     Handle model prediction
     Args:
+        args: command line arguments
         model: model name
         prediction: prediction
     Return:
@@ -45,19 +46,36 @@ def visualize(model,prediction):
     box_labels = prediction.box_labels
     gt_boxes = prediction.gt_boxes
     gt_mask = prediction.gt_mask
-    heat_map = prediction.heat_map # head map np.array (256,256,3)
     image = prediction.image  # orignal image np.array (256,256,3)
     pred_boxes = prediction.pred_boxes
     pred_label = prediction.pred_label # Predict label Normal,Anomalous
     pred_mask = prediction.pred_mask # binary map np.array (256,256)
     pred_score = prediction.pred_score # predict score (0.0-1.0)
-    segmentations = prediction.segmentations
-    if model == 'cfm':
-        output = segmentations
+    # segmentations = prediction.segmentations
+    # model customize
+    if model == 'dfm' and args.openvino:
+        pred_label = pred_label[0]
+        if pred_label:
+            pred_label = "Anomalous"
+        else:
+            pred_label = "Normal"
+        output = image # dfm doest not have head map
+    elif model == 'cfa' or model == 'padim' :
+        if pred_label:
+            pred_label = "Anomalous"
+        else:
+            pred_label = "Normal"
+        output = prediction.heat_map
+    elif model == 'reverse_distillation' or model == 'stfpm':
+        if pred_label:
+            pred_label = "Anomalous"
+        else:
+            pred_label = "Normal"
+        output = prediction.segmentations
     else:
-        output = heat_map
+        output = prediction.heat_map
     # post process heatmap
-    h,w,c = heat_map.shape
+    h,w,c = output.shape
     org = (5,h-20)
     text = pred_label + ":" + str(round(pred_score,2))
     output = cv2.putText(output,text, org, font, fontScale, color, thickness, cv2.LINE_AA)
@@ -99,13 +117,13 @@ if __name__ == "__main__":
 
     # predict top left
     prediction = inferencer.predict(image=top_left)
-    output = visualize(model_name,prediction)
+    output = visualize(args,model_name,prediction)
     path = os.path.join(image_path,'top_left.jpg')
     cv2.imwrite(path,output)
     
     # predict top right
     prediction = inferencer.predict(image=top_right)
-    output = visualize(model_name,prediction)
+    output = visualize(args,model_name,prediction)
     path = os.path.join(image_path,'top_right.jpg')
     cv2.imwrite(path,output)
 
