@@ -17,8 +17,8 @@ DIM = 512
 # visualizer
 visualizer = Visualizer(mode="simple",task="segmentation")
 
-# config_path = 'models/dfm/mvtec/laptop/run/config.yaml'
-# weight_path = 'models/dfm/mvtec/laptop/run/openvino/model.onnx'
+# config_path = 'model/dfm/mvtec/laptop/run/config.yaml'
+# weight_path = 'model/dfm/mvtec/laptop/run/openvino/model.onnx'
 # meta_data_path = 'models/dfm/mvtec/laptop/run/openvino/meta_data.json'
 # device = 'CPU' #["CPU", "GPU", "VPU"]
 # inferencer = OpenVINOInferencer(
@@ -28,8 +28,8 @@ visualizer = Visualizer(mode="simple",task="segmentation")
 #     device = device
 # )
 
-config_path = f'models/{model_name}/mvtec/laptop/run/config.yaml'
-model_path = f'models/{model_name}/mvtec/laptop/run/weights/model.ckpt'
+config_path = f'model/{model_name}/mvtec/laptop/run/config.yaml'
+model_path = f'model/{model_name}/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 # images = os.listdir(path)
