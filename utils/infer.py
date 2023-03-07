@@ -31,6 +31,7 @@ visualizer = Visualizer(mode="simple",task="segmentation")
 config_path = f'model/{model_name}/mvtec/laptop/run/config.yaml'
 model_path = f'model/{model_name}/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
+image_path = f'results/{model_name}/mvtec/laptop/run/images'
 
 images = os.listdir(path)
 image = random.choice(images)
@@ -47,13 +48,15 @@ if __name__ == "__main__":
     prediction = inferencer.predict(image=top_left)
     output = visualizer.visualize_image(prediction)
     output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
-    cv2.imwrite('top_left_infer.jpg',output)
+    path = os.path.join(image_path,'top_left_infer.jpg')
+    cv2.imwrite(path,output)
 
     # predict top left
     prediction = inferencer.predict(image=top_right)
     output = visualizer.visualize_image(prediction)
     output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
-    cv2.imwrite('infer_top_right_infer.jpg',output)
+    path = os.path.join(image_path,'top_right_infer.jpg')
+    cv2.imwrite(path,output)
 
     end_time = time.time() - start_time
     print("Inference timing consumption:",end_time)
