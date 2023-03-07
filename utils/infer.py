@@ -23,18 +23,23 @@ def get_args() -> Namespace:
     args = parser.parse_args()
     return args
 
-def visualize(prediction):
+def visualize(model,prediction):
     '''
     Handle model prediction
+    Args:
+        model: model name
+        prediction: prediction
+    Return:
+        output: post processed image (heat map or segmentation)
     '''
     # font
     font = cv2.FONT_HERSHEY_SIMPLEX
     # fontScale
-    fontScale = 1
+    fontScale = 0.5
     # Blue color in BGR
     color = (255, 0, 0)
     # Line thickness of 2 px
-    thickness = 2
+    thickness = 1
     # Extract prediction's components
     anomaly_map = prediction.anomaly_map # anomaly map np.array (256,256)
     box_labels = prediction.box_labels
@@ -47,12 +52,17 @@ def visualize(prediction):
     pred_mask = prediction.pred_mask # binary map np.array (256,256)
     pred_score = prediction.pred_score # predict score (0.0-1.0)
     segmentations = prediction.segmentations
+    if model == 'cfm':
+        output = segmentations
+    else:
+        output = heat_map
     # post process heatmap
     h,w,c = heat_map.shape
     org = (5,h-20)
-    text = pred_label + ":" + str(pred_score)
-    heat_map = cv2.putText(heat_map,text, org, font, fontScale, color, thickness, cv2.LINE_AA)
-    return heat_map
+    text = pred_label + ":" + str(round(pred_score,2))
+    output = cv2.putText(output,text, org, font, fontScale, color, thickness, cv2.LINE_AA)
+    output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
+    return output
 
 # initialize
 args = get_args()
@@ -89,9 +99,15 @@ if __name__ == "__main__":
 
     # predict top left
     prediction = inferencer.predict(image=top_left)
-    output = visualize(prediction)
+    output = visualize(model_name,prediction)
     path = os.path.join(image_path,'top_left.jpg')
+    cv2.imwrite(path,output)
+    
+    # predict top right
+    prediction = inferencer.predict(image=top_right)
+    output = visualize(model_name,prediction)
+    path = os.path.join(image_path,'top_right.jpg')
     cv2.imwrite(path,output)
 
     end_time = time.time() - start_time
-    print("Inference timing consumption:",end_time)
+    print("Inference timing consumption (s):",end_time)
