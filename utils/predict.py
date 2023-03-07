@@ -1,5 +1,5 @@
 '''
-python3 utils/predict.py --openvino --model padim
+python3 utils/predict.py --path samples/good --model padim
 '''
 import os
 import sys
