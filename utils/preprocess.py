@@ -7,6 +7,7 @@ src = 'samples/good'
 dst = 'dst'
 DIM = 256
 PAD = 10
+k = 3
 images = os.listdir(src)
 image = random.choice(images)
 path = os.path.join(src,image)
@@ -31,7 +32,13 @@ print('v_right',v_right.shape)
 
 top_left = cv2.Canny(top_left,127,255)
 top_right = cv2.Canny(top_right,127,255)
+print('top_left',top_left.shape,top_left.max(),top_left.min())
+print('top_right',top_right.shape,top_right.max(),top_right.min())
 
+for i in range(DIM-k):
+    v = top_right[i:i+k,:]
+    print(i,np.sum(v)/255)
+    
 # cv2.imwrite('assets/v_left.jpg',v_left)
 # cv2.imwrite('assets/h_left.jpg',h_left)
 cv2.imwrite('assets/top_left.jpg',top_left)
