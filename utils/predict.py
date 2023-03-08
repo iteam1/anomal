@@ -43,6 +43,7 @@ def visualize(args,model,prediction):
     color = (255, 0, 0)
     # Line thickness of 2 px
     thickness = 1
+    
     # Extract prediction's components
     anomaly_map = prediction.anomaly_map # anomaly map np.array (256,256)
     box_labels = prediction.box_labels
@@ -54,6 +55,8 @@ def visualize(args,model,prediction):
     pred_mask = prediction.pred_mask # binary map np.array (256,256)
     pred_score = prediction.pred_score # predict score (0.0-1.0)
     # segmentations = prediction.segmentations
+    #cv2.imwrite('mask.jpg',pred_mask)
+    
     # model customize
     if model == 'dfm' and args.openvino:
         pred_label = pred_label[0]
@@ -62,24 +65,22 @@ def visualize(args,model,prediction):
         else:
             pred_label = "Normal"
         output = image # dfm doest not have head map
-        cv2.imwrite('mask.jpg',output)
+    
     elif (model == 'cfa' or model == 'padim') and args.openvino:
         if pred_label:
             pred_label = "Anomalous"
         else:
             pred_label = "Normal"
         output = prediction.segmentations #prediction.heat_map
-        cv2.imwrite('mask.jpg',output)
+    
     elif (model == 'reverse_distillation' or model == 'stfpm'):
         if pred_label:
             pred_label = "Anomalous"
         else:
             pred_label = "Normal"
         output = prediction.segmentations
-        cv2.imwrite('mask.jpg',output)
     else:
         output = prediction.segmentations #prediction.heat_map
-        cv2.imwrite('mask.jpg',output)
     # post process heatmap
     h,w,c = output.shape
     org = (5,h-20)
