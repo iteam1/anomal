@@ -16,7 +16,9 @@ def get_args() -> Namespace:
     Get command line arguments
     '''
     parser = ArgumentParser()
-    parser.add_argument('--model',type=str,default = 'padim',choices=["cfa", "cflow", "dfkde","dfm","padim",'patchcore','reverse_distillation','stfpm'], help = 'Name of the trained model')
+    parser.add_argument('--model',type=str,default = 'padim',choices=["padim",'reverse_distillation','stfpm',
+                                                                      "padim2",'reverse_distillation2','stfpm2',
+                                                                      "padim3",'reverse_distillation3','stfpm3'], help = 'Name of the trained model')
     parser.add_argument('--openvino',action='store_true',help='Option optmize by openvino')
     parser.add_argument('--dim',type=int,default=256,help='Image crop size')
     parser.add_argument('--path',type=str,default='samples/crack',help='Path of Predict Image')
@@ -58,7 +60,7 @@ def visualize(args,model,prediction):
     # cv2.imwrite('mask.jpg',pred_mask) # dfm mask = None
     
     # model customize
-    if model == 'dfm' and args.openvino:
+    if 'dfm' in model and args.openvino:
         pred_label = pred_label[0]
         if pred_label:
             pred_label = "Anomalous"
@@ -66,14 +68,14 @@ def visualize(args,model,prediction):
             pred_label = "Normal"
         output = image # dfm doest not have head map
     
-    elif (model == 'cfa' or model == 'padim') and args.openvino:
+    elif ('cfa' in model or 'padim' in model) and args.openvino:
         if pred_label:
             pred_label = "Anomalous"
         else:
             pred_label = "Normal"
         output = prediction.segmentations #prediction.heat_map
     
-    elif (model == 'reverse_distillation' or model == 'stfpm'):
+    elif ('reverse_distillation' in model or 'stfpm' in model):
         if pred_label:
             pred_label = "Anomalous"
         else:
@@ -94,7 +96,6 @@ args = get_args()
 model_name = args.model
 path = args.path
 DIM = args.dim
-NORMAL_THRESHOLD = 0.6
 ANORMAL_THRESHOLD = 0.65
 normal = 0
 anormal = 0
