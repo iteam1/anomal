@@ -16,15 +16,34 @@ def get_args() -> Namespace:
     Get command line arguments
     '''
     parser = ArgumentParser()
-    parser.add_argument('--model',type=str,default = 'padim',choices=["padim",'reverse_distillation','stfpm',
-                                                                      "padim2",'reverse_distillation2','stfpm2',
-                                                                      "padim3",'reverse_distillation3','stfpm3'], help = 'Name of the trained model')
+    parser.add_argument('--model',type=str,default = 'padim',choices=["padim",'reverse_distillation','stfpm'], help = 'Name of the trained model')
     parser.add_argument('--openvino',action='store_true',help='Option optmize by openvino')
     parser.add_argument('--dim',type=int,default=256,help='Image crop size')
     parser.add_argument('--path',type=str,default='samples/crack',help='Path of Predict Image')
+    parser.add_argument('--thresh',type=float,default=0.5,help='Anomaly threshold')
     args = parser.parse_args()
     return args
 
+def heatmap(anomaly_map,model):
+    '''
+    Convert anomaly map to head map
+    Args:
+        anomaly_mal: anomal array score
+        model: name of model
+    '''
+    if model == "reverse_distillation" or model == "stfpm":
+        min_val = 0.3
+        max_val = 0.6
+    else:
+        min_val = 0.0
+        max_val = 1.0
+    heat_map = (anomaly_map - min_val)/(max_val - min_val)
+    heat_map = heat_map*255
+    heat_map = heat_map - heat_map.min()
+    heat_map = heat_map.astype('uint8')
+    heat_map = cv2.applyColorMap(heat_map, cv2.COLORMAP_JET)
+    return heat_map
+    
 def visualize(args,model,prediction):
     '''
     Handle model prediction
@@ -37,17 +56,14 @@ def visualize(args,model,prediction):
         pred_label: prediction label
         pred_score: prediction score
     '''
-    # font
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    # fontScale
-    fontScale = 0.5
-    # Blue color in BGR
-    color = (255, 0, 0)
-    # Line thickness of 2 px
-    thickness = 1
+    font = cv2.FONT_HERSHEY_SIMPLEX # font
+    fontScale = 0.6 # fontScale
+    color = (0,255,255)# Blue color in BGR
+    thickness = 1 # Line thickness
     
     # Extract prediction's components
-    anomaly_map = prediction.anomaly_map # anomaly map np.array (256,256)
+    anomaly_map = prediction.anomaly_map # anomaly map np.array (256,256) (0-1)
+    heat_map = heatmap(anomaly_map,model)
     box_labels = prediction.box_labels
     gt_boxes = prediction.gt_boxes
     gt_mask = prediction.gt_mask
@@ -57,7 +73,6 @@ def visualize(args,model,prediction):
     pred_mask = prediction.pred_mask # binary map np.array (256,256)
     pred_score = prediction.pred_score # predict score (0.0-1.0)
     # segmentations = prediction.segmentations
-    # cv2.imwrite('mask.jpg',pred_mask) # dfm mask = None
     
     # model customize
     if 'dfm' in model and args.openvino:
@@ -83,20 +98,23 @@ def visualize(args,model,prediction):
         output = prediction.segmentations
     else:
         output = prediction.segmentations #prediction.heat_map
-    # post process heatmap
+    
+    # post process output and heatmap
     h,w,c = output.shape
     org = (5,h-20)
-    text = pred_label + ":" + str(round(pred_score,2))
+    text = pred_label + ":" + str(round(pred_score,4))
     output = cv2.putText(output,text, org, font, fontScale, color, thickness, cv2.LINE_AA)
     output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
-    return output,pred_label,pred_score
+    output = cv2.addWeighted(output,0.4,heat_map,0.6,0)
+    return output,pred_label,pred_score,pred_mask
 
 # initialize
 args = get_args()
 model_name = args.model
+model_name = ''.join(c for c in model_name if not c.isdigit())
 path = args.path
 DIM = args.dim
-ANORMAL_THRESHOLD = 0.65
+ANORMAL_THRESHOLD = args.thresh
 normal = 0
 anormal = 0
 
@@ -130,7 +148,7 @@ if __name__ == "__main__":
 
         # predict top left
         prediction = inferencer.predict(image=top_left)
-        output,pred,score = visualize(args,model_name,prediction)
+        output,pred,score,mask = visualize(args,model_name,prediction)
         if pred == "Anomalous" and score > ANORMAL_THRESHOLD:
             anormal +=1
             name = 'top_left_'+image
@@ -140,13 +158,14 @@ if __name__ == "__main__":
             
         # predict top right
         prediction = inferencer.predict(image=top_right)
-        output,pred,score = visualize(args,model_name,prediction)
+        output,pred,score,mask = visualize(args,model_name,prediction)
         if pred == "Anomalous" and score > ANORMAL_THRESHOLD:
             anormal +=1
             name = 'top_right_'+image
             cv2.imwrite(os.path.join(image_path,name),output)
         else:
             normal +=1
+        cv2.imwrite('assets/mask.jpg',mask)
 
         end_time = time.time() - start_time
         print(i,"Inference timing consumption (s):",end_time)
