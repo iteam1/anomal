@@ -55,7 +55,7 @@ def visualize(args,model,prediction):
     pred_mask = prediction.pred_mask # binary map np.array (256,256)
     pred_score = prediction.pred_score # predict score (0.0-1.0)
     # segmentations = prediction.segmentations
-    #cv2.imwrite('mask.jpg',pred_mask)
+    # cv2.imwrite('mask.jpg',pred_mask) # dfm mask = None
     
     # model customize
     if model == 'dfm' and args.openvino:
