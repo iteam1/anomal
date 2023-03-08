@@ -28,7 +28,7 @@ dataset:
 
 model:
   name: reverse_distillation
-  lr: 0.005
+  lr: 0.005 #0.005
   backbone: wide_resnet50_2
   pre_trained: true
   layers:
@@ -39,8 +39,8 @@ model:
     patience: 3
     metric: pixel_AUROC
     mode: max
-  beta1: 0.5
-  beta2: 0.99
+  beta1: 0.5 # 0.5
+  beta2: 0.99 # 0.99
   normalization_method: min_max # options: [null, min_max, cdf]
   anomaly_map_mode: multiply
 
