@@ -1,5 +1,5 @@
 '''
-python3 utils/predict.py --path samples/good --model padim
+python3 utils/predict.py --openvino --path samples/good --model padim
 '''
 import os
 import sys
@@ -16,9 +16,7 @@ def get_args() -> Namespace:
     Get command line arguments
     '''
     parser = ArgumentParser()
-    parser.add_argument('--model',type=str,default = 'padim',
-                        choices=["cfa", "cflow", "dfkde","dfm","padim",'patchcore','reverse_distillation','stfpm'],
-                        help = 'Name of the trained model')
+    parser.add_argument('--model',type=str,default = 'padim',choices=["cfa", "cflow", "dfkde","dfm","padim",'patchcore','reverse_distillation','stfpm'], help = 'Name of the trained model')
     parser.add_argument('--openvino',action='store_true',help='Option optmize by openvino')
     parser.add_argument('--dim',type=int,default=256,help='Image crop size')
     parser.add_argument('--path',type=str,default='samples/crack',help='Path of Predict Image')
@@ -64,20 +62,24 @@ def visualize(args,model,prediction):
         else:
             pred_label = "Normal"
         output = image # dfm doest not have head map
+        cv2.imwrite('mask.jpg',output)
     elif (model == 'cfa' or model == 'padim') and args.openvino:
         if pred_label:
             pred_label = "Anomalous"
         else:
             pred_label = "Normal"
         output = prediction.segmentations #prediction.heat_map
+        cv2.imwrite('mask.jpg',output)
     elif (model == 'reverse_distillation' or model == 'stfpm'):
         if pred_label:
             pred_label = "Anomalous"
         else:
             pred_label = "Normal"
         output = prediction.segmentations
+        cv2.imwrite('mask.jpg',output)
     else:
         output = prediction.segmentations #prediction.heat_map
+        cv2.imwrite('mask.jpg',output)
     # post process heatmap
     h,w,c = output.shape
     org = (5,h-20)
