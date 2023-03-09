@@ -6,25 +6,26 @@ import os
 import random
 import numpy as np
 
-src = 'samples/good'
-dst = 'dst'
+src = 'sample1/good'
+dst = 'tmp'
 DIM = 256
 PAD = 1
 L = 100
 k = 3
 s = 11
-
 path_prototxt = "model/hed/deploy.prototxt"
 path_caffemodel = "model/hed/hed_pretrained_bsds.caffemodel"
+
+# create destination folder
+if os.path.exist(dst):
+    os.mkdir(dst)
 class CropLayer(object):
     def __init__(self, params, blobs):
         self.xstart = 0
         self.xend = 0
         self.ystart = 0
         self.yend = 0
-
-    # Our layer receives two inputs. We need to crop the first input blob
-    # to match a shape of the second one (keeping batch size and number of channels)
+        
     def getMemoryShapes(self, inputs):
         inputShape, targetShape = inputs[0], inputs[1]
         batchSize, numChannels = inputShape[0], inputShape[1]
@@ -43,6 +44,8 @@ class CropLayer(object):
 # Load the model.
 net = cv2.dnn.readNetFromCaffe(path_prototxt, path_caffemodel)
 cv2.dnn_registerLayer('Crop', CropLayer)
+
+
 
 # read image
 images = os.listdir(src)
@@ -72,7 +75,7 @@ top_left_hed = cv2.resize(top_left_hed,(top_left_hed.shape[1],top_left_hed.shape
 top_left_hed = 255 * top_left_hed
 top_left_hed = top_left_hed.astype(np.uint8)
 
-inp = cv2.dnn.blobFromImage(top_right, scalefactor=1.0, size=(DIM,DIM),
+inp = cv2.dnn.blobFromImage(top_right, scalefactor=2.0, size=(DIM,DIM),
                            mean=(104.00698793, 116.66876762, 122.67891434),
                            swapRB=False, crop=False)
 net.setInput(inp)
@@ -81,20 +84,11 @@ top_right_hed = top_right_hed[0, 0]
 top_right_hed = cv2.resize(top_right_hed,(top_right_hed.shape[1],top_right_hed.shape[0]))
 top_right_hed = 255 * top_right_hed
 top_right_hed = top_right_hed.astype(np.uint8)
+top_left_canny = cv2.Canny(top_left,127,255)
+top_right_canny = cv2.Canny(top_right,127,255)
 
-top_left_canny = cv2.Canny(top_left,top_left.shape[0],top_left.shape[1])
-top_right_canny = cv2.Canny(top_right,top_right.shape[0],top_right.shape[1])
-# top_left_canny = cv2.Canny(top_left,127,255)
-# top_right_canny = cv2.Canny(top_right,127,255)
-
-# Creating kernel
-# kernel = np.ones((3, 3), np.uint8)
-# Using cv2.erode() method 
-# top_left_hed = cv2.erode(top_left_hed, kernel) 
-# top_left_hed = cv2.erode(top_left_hed, kernel) 
-
-top_left =  top_left_canny #cv2.bitwise_and(top_left_hed,top_left_canny)
-top_right = top_right_canny #cv2.bitwise_and(top_right_hed,top_right_canny)
+top_left =  top_left_canny
+top_right = top_right_canny
 
 # find vertical lines
 v_left_sum = []
@@ -165,20 +159,10 @@ top_left = cv2.bitwise_not(top_left)
 top_right = cv2.bitwise_not(top_right)
 
 # convert to bgr
-#top_left = cv2.cvtColor(top_left,cv2.COLOR_GRAY2BGR)
-#top_right = cv2.cvtColor(top_right,cv2.COLOR_GRAY2BGR)
+# top_left = cv2.cvtColor(top_left,cv2.COLOR_GRAY2BGR)
+# top_right = cv2.cvtColor(top_right,cv2.COLOR_GRAY2BGR)
 
-#left_out = cv2.addWeighted(top_left_org,0.3,top_left,0.7,0)
-#right_out = cv2.addWeighted(top_right_org,0.3,top_right,0.7,0)    
+# left_out = cv2.addWeighted(top_left_org,0.3,top_left,0.7,0)
+# right_out = cv2.addWeighted(top_right_org,0.3,top_right,0.7,0)    
 left_out = cv2.bitwise_and(top_left_org,top_left_org,mask = top_left)
 right_out = cv2.bitwise_and(top_right_org,top_right_org,mask = top_right)
-
-print('left vertical line:',v_l_p)
-print('left horizontal line:',h_l_p)
-print('right vertical line:',v_r_p)
-print('right horizontal line:',h_r_p)
-
-cv2.imwrite('assets/top_left.jpg',top_left)
-cv2.imwrite('assets/top_right.jpg',top_right)
-cv2.imwrite('assets/left_out.jpg',left_out)
-cv2.imwrite('assets/right_out.jpg',right_out)
