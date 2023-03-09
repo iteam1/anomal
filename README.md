@@ -26,6 +26,12 @@ optimization's requirements:
 [notebooks](https://github.com/openvinotoolkit/anomalib/tree/main/notebooks)
 # references
 
+[hed-edge-detector](https://github.com/ashukid/hed-edge-detector)
+
+[holistically nested edge deteciton](https://www.geeksforgeeks.org/holistically-nested-edge-detection-with-opencv-and-deep-learning/)
+
+[thin line](https://answers.opencv.org/question/163561/looking-for-a-thinningskeletonizing-algorithm-with-opencv-in-python/)
+
 [Deep-Learning-Based Anomaly Detection with MVTec HALCON](https://www.youtube.com/watch?v=NI6ITCGMhjI)
 
 [Anomalib: Inferences](https://www.youtube.com/watch?v=9KvIS4XgRtg&t=2s)
