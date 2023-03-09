@@ -9,9 +9,10 @@ import numpy as np
 src = 'sample1/good'
 dst = 'dst'
 DIM = 256
-PAD = 3
+PAD = 1
 L = 100
 k = 3
+s = 15
 path_prototxt = "model/hed/deploy.prototxt"
 path_caffemodel = "model/hed/hed_pretrained_bsds.caffemodel"
 class CropLayer(object):
@@ -55,6 +56,9 @@ top_left = img[0:DIM,0:DIM]
 top_right = img[0:DIM,w-DIM:w] # y,x
 top_left_org = top_left.copy()
 top_right_org = top_right.copy()
+#blur 
+top_left = cv2.medianBlur(top_left,s)
+top_right = cv2.medianBlur(top_right,s)
 
 # edge detection
 inp = cv2.dnn.blobFromImage(top_left, scalefactor=2.0, size=(DIM,DIM),
@@ -77,8 +81,10 @@ top_right_hed = cv2.resize(top_right_hed,(top_right_hed.shape[1],top_right_hed.s
 top_right_hed = 255 * top_right_hed
 top_right_hed = top_right_hed.astype(np.uint8)
 
-top_left_canny = cv2.Canny(top_left,top_left.shape[0],top_left.shape[1])
-top_right_canny = cv2.Canny(top_right,top_right.shape[0],top_right.shape[1])
+# top_left_canny = cv2.Canny(top_left,top_left.shape[0],top_left.shape[1])
+# top_right_canny = cv2.Canny(top_right,top_right.shape[0],top_right.shape[1])
+top_left_canny = cv2.Canny(top_left,127,255)
+top_right_canny = cv2.Canny(top_right,127,255)
 
 top_left =  top_left_canny #cv2.bitwise_and(top_left_hed,top_left_canny)
 top_right = top_right_canny #cv2.bitwise_and(top_right_hed,top_right_canny)
@@ -133,7 +139,7 @@ top_left[:h_l_max,:] = 255
 top_right[:h_r_max,:] = 255
 
 # shift out
-steps = 5
+steps = 50
 for step in range(steps):
     M = np.float32([[1, 0, step],
                     [0, 1, 0]
@@ -151,23 +157,15 @@ for step in range(steps):
 top_left = cv2.bitwise_not(top_left)
 top_right = cv2.bitwise_not(top_right)
 
-# shift in
-# steps = DIM
-# for step in range(steps):
-#     M = np.float32([[1, 0, -step],
-#                     [0, 1, 0]
-#                     ])
-#     shift_right = cv2.warpAffine(top_right, M, (top_right.shape[1], top_right.shape[0]))
-#     top_right = cv2.bitwise_or(top_right,shift_right)
-    
-# for step in range(steps):
-#     M = np.float32([[1, 0, step],
-#                     [0, 1, 0]
-#                     ])
-#     shift_left = cv2.warpAffine(top_left, M, (top_left.shape[1], top_left.shape[0]))
-#     top_left = cv2.bitwise_or(top_left,shift_left)
+# convert to bgr
+# top_left = cv2.cvtColor(top_left,cv2.COLOR_GRAY2BGR)
+# top_right = cv2.cvtColor(top_right,cv2.COLOR_GRAY2BGR)
 
-    
+# left_out = cv2.addWeighted(top_left_org,0.3,top_left,0.7,0)
+# right_out = cv2.addWeighted(top_right_org,0.3,top_right,0.7,0)    
+left_out = cv2.bitwise_and(top_left_org,top_left_org,mask = top_left)
+right_out = cv2.bitwise_and(top_right_org,top_right_org,mask = top_right)
+
 print('left vertical line:',v_l_p)
 print('left horizontal line:',h_l_p)
 print('right vertical line:',v_r_p)
@@ -175,5 +173,5 @@ print('right horizontal line:',h_r_p)
 
 cv2.imwrite('assets/top_left.jpg',top_left)
 cv2.imwrite('assets/top_right.jpg',top_right)
-cv2.imwrite('assets/top_left_org.jpg',top_left_org)
-cv2.imwrite('assets/top_right_org.jpg',top_right_org)
+cv2.imwrite('assets/left_out.jpg',left_out)
+cv2.imwrite('assets/right_out.jpg',right_out)
