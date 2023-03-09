@@ -11,7 +11,8 @@ myconda
 anomalib
 hazelnut_toy
 run
-samples
+sample*
+tmp
 datasets
 results
 model
