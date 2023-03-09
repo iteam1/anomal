@@ -21,3 +21,4 @@ Examples:
 
 Files:
 image_crop/top_crop.jpg
+sftp://172.16.21.0/media/DATA_LAPTOP_BOOTH/1.LaptopBooth/4.History/6.History_Fedex_V2/01_06_2022/01062022165004/image_crop/top
