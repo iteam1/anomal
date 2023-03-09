@@ -28,7 +28,7 @@ for thing in things:
 n = [1,2,3]
 
 for date in dates:
-    print(date)
+    print('Searching on:',date)
     items = os.listdir(date)
     for item in items:
         path = os.path.join(date,item)
@@ -36,11 +36,11 @@ for date in dates:
         b = len(item) == 14
         c = item.isalnum()
         d = random.choice(n) == 1 # random sampling
-        # if all condition sartified
+        # if all the conditions are sartified
         if a and b and c and d:
             file = os.path.join(date,item,'image_crop/top_crop.jpg')
-            b = os.path.exists(file)
-            if a and b:
+            e = os.path.exists(file)
+            if e:
                 name = str(item) + "_top_crop.jpg"
                 shutil.copy(file,os.path.join(dst,name))
                 print('coping:',item)
