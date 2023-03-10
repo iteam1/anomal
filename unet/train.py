@@ -1,11 +1,14 @@
 import os
 from model import *
 from data import *
+import tensorflow as tf
+import tensorflow as tf
 
 src = 'datasets/unet/train'
 dst = 'model/unet/model.hdf5'
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 data_gen_args = dict(rotation_range=0.2,
                     width_shift_range=0.05,

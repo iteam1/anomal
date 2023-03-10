@@ -26,6 +26,8 @@ optimization's requirements:
 [notebooks](https://github.com/openvinotoolkit/anomalib/tree/main/notebooks)
 # references
 
+[install tensorflow gpu](https://www.tensorflow.org/install/pip)
+
 [Interactive Foreground Extraction using GrabCut Algorithm OpenCV](https://theailearner.com/2020/12/03/interactive-foreground-extraction-using-grabcut-algorithm-opencv/)
 
 [GrabCut for Automatic Image Segmentation [OpenCV Tutorial]](https://www.sicara.fr/blog-technique/grabcut-for-automatic-image-segmentation-opencv-tutorial)
