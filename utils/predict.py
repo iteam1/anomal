@@ -141,6 +141,7 @@ if __name__ == "__main__":
     for i,image in enumerate(images):
         # Start counting time
         start_time = time.time()
+        id = image.split('_')[0]
         img = cv2.imread(os.path.join(path,image))
         h,w,_ = img.shape
         top_left = img[0:DIM,0:DIM]
@@ -151,8 +152,12 @@ if __name__ == "__main__":
         output,pred,score,mask = visualize(args,model_name,prediction)
         if pred == "Anomalous" and score > ANORMAL_THRESHOLD:
             anormal +=1
-            name = 'top_left_'+image
+            # predict image
+            name = id + '_left.jpg'
             cv2.imwrite(os.path.join(image_path,name),output)
+            # mask image
+            name = id + '_mask_left.jpg'
+            cv2.imwrite(os.path.join(image_path,name),mask)
         else:
             normal +=1
             
@@ -161,11 +166,14 @@ if __name__ == "__main__":
         output,pred,score,mask = visualize(args,model_name,prediction)
         if pred == "Anomalous" and score > ANORMAL_THRESHOLD:
             anormal +=1
-            name = 'top_right_'+image
+            # predict image
+            name = id + '_right.jpg'
             cv2.imwrite(os.path.join(image_path,name),output)
+            # mask image
+            name = id + '_mask_right.jpg'
+            cv2.imwrite(os.path.join(image_path,name),mask)
         else:
             normal +=1
-        cv2.imwrite('assets/mask.jpg',mask)
 
         end_time = time.time() - start_time
         print(i,"Inference timing consumption (s):",end_time)

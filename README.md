@@ -26,6 +26,8 @@ optimization's requirements:
 [notebooks](https://github.com/openvinotoolkit/anomalib/tree/main/notebooks)
 # references
 
+[scikit-image](https://scikit-image.org/docs/stable/auto_examples/applications/plot_morphology.html)
+
 [hed-edge-detector](https://github.com/ashukid/hed-edge-detector)
 
 [holistically nested edge deteciton](https://www.geeksforgeeks.org/holistically-nested-edge-detection-with-opencv-and-deep-learning/)
