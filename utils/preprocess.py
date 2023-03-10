@@ -9,10 +9,9 @@ import numpy as np
 src = 'samples/good'
 dst = 'dst'
 DIM = 256
-PAD = 1
-L = 100
+PAD = 0
+L = 50
 k = 3
-s = 11
 
 path_prototxt = "model/hed/deploy.prototxt"
 path_caffemodel = "model/hed/hed_pretrained_bsds.caffemodel"
@@ -57,7 +56,13 @@ top_left = img[0:DIM,0:DIM]
 top_right = img[0:DIM,w-DIM:w] # y,x
 top_left_org = top_left.copy()
 top_right_org = top_right.copy()
-#blur 
+
+# resize
+top_left = cv2.resize(top_left,(124,124),interpolation=cv2.INTER_AREA)
+top_right = cv2.resize(top_right,(125,124),interpolation=cv2.INTER_AREA)
+
+#blur
+s = 3
 top_left = cv2.medianBlur(top_left,s)
 top_right = cv2.medianBlur(top_right,s)
 
@@ -82,18 +87,25 @@ top_right_hed = cv2.resize(top_right_hed,(top_right_hed.shape[1],top_right_hed.s
 top_right_hed = 255 * top_right_hed
 top_right_hed = top_right_hed.astype(np.uint8)
 
-top_left_canny = cv2.Canny(top_left,top_left.shape[0],top_left.shape[1])
-top_right_canny = cv2.Canny(top_right,top_right.shape[0],top_right.shape[1])
+
+top_left_canny = cv2.Canny(cv2.cvtColor(top_left,cv2.COLOR_BGR2GRAY),top_left.shape[0],top_left.shape[1])
+top_right_canny = cv2.Canny(cv2.cvtColor(top_right,cv2.COLOR_BGR2GRAY),top_right.shape[0],top_right.shape[1])
 # top_left_canny = cv2.Canny(top_left,127,255)
 # top_right_canny = cv2.Canny(top_right,127,255)
 
 # Creating kernel
-kernel = np.ones((3, 3), np.uint8)
+kernel = np.ones((3,3), np.uint8)
 top_left_hed = cv2.erode(top_left_hed, kernel) 
-top_left_hed = cv2.erode(top_left_hed, kernel) 
+top_left_hed = cv2.erode(top_left_hed, kernel)
+# top_left_canny = cv2.dilate(top_left_canny, kernel) 
+# top_right_canny = cv2.dilate(top_right_canny, kernel) 
 
-top_left =  cv2.bitwise_or(top_left_hed,top_left_canny)
-top_right = cv2.bitwise_or(top_right_hed,top_right_canny)
+top_left =  top_left_canny #cv2.bitwise_or(top_left_hed,top_left_canny)
+top_right = top_right_canny #cv2.bitwise_or(top_right_hed,top_right_canny)
+
+# downsize
+top_left = cv2.resize(top_left,(DIM,DIM),interpolation=cv2.INTER_AREA)
+top_right = cv2.resize(top_right,(DIM,DIM),interpolation=cv2.INTER_AREA)
 
 top_left = top_left.astype(np.uint8)
 top_right = top_right.astype(np.uint8)

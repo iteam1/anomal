@@ -26,6 +26,14 @@ optimization's requirements:
 [notebooks](https://github.com/openvinotoolkit/anomalib/tree/main/notebooks)
 # references
 
+[Interactive Foreground Extraction using GrabCut Algorithm OpenCV](https://theailearner.com/2020/12/03/interactive-foreground-extraction-using-grabcut-algorithm-opencv/)
+
+[GrabCut for Automatic Image Segmentation [OpenCV Tutorial]](https://www.sicara.fr/blog-technique/grabcut-for-automatic-image-segmentation-opencv-tutorial)
+
+[FgSegNetv2](https://github.com/lim-anggun/FgSegNet_v2)
+
+[FgSegNet](https://github.com/lim-anggun/FgSegNet)
+
 [scikit-image](https://scikit-image.org/docs/stable/auto_examples/applications/plot_morphology.html)
 
 [hed-edge-detector](https://github.com/ashukid/hed-edge-detector)
