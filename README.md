@@ -26,6 +26,8 @@ optimization's requirements:
 [notebooks](https://github.com/openvinotoolkit/anomalib/tree/main/notebooks)
 # references
 
+[How to remove noise opencv(https://stackoverflow.com/questions/62042172/how-to-remove-noise-in-image-opencv-python)
+
 [install tensorflow gpu](https://www.tensorflow.org/install/pip)
 
 [Interactive Foreground Extraction using GrabCut Algorithm OpenCV](https://theailearner.com/2020/12/03/interactive-foreground-extraction-using-grabcut-algorithm-opencv/)
