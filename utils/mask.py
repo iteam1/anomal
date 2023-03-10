@@ -22,6 +22,6 @@ for i in imgs:
     path = os.path.join(src,i)
     img = cv2.imread(path)
     mask = cv2.inRange(img,lower,upper)
-    mask = cv2.bitwise_not(mask)
+    #mask = cv2.bitwise_not(mask)
     path = os.path.join(dst,i)
     cv2.imwrite(path,mask)

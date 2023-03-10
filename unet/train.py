@@ -24,4 +24,4 @@ model = unet()
 
 model_checkpoint = ModelCheckpoint(dst, monitor='loss',verbose=1, save_best_only=True)
 
-model.fit_generator(myGene,steps_per_epoch=10,epochs=50,callbacks=[model_checkpoint])
+model.fit_generator(myGene,steps_per_epoch=20,epochs=100,callbacks=[model_checkpoint])
