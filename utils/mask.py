@@ -1,6 +1,6 @@
 '''
 create mask
-CMD: python3 utils/mask.py mask
+CMD: python3 utils/mask.py datasets/unet/mask mask
 '''
 import os
 import sys
@@ -8,9 +8,10 @@ import cv2
 import numpy as np
 
 src = sys.argv[1]
-dst = 'ground_truth'
-lower = np.array([0,0,253])
-upper = np.array([1,1,255])
+dst = sys.argv[2]
+
+lower = np.array([0,0,254])
+upper = np.array([0,0,255])
 
 if not os.path.exists(dst):
     os.mkdir(dst)
