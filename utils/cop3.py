@@ -1,6 +1,6 @@
 '''
 copy image follow mask folder
-CMD: python3 utils/cop3.py datasets/laptop/train/good datasets/unet/mask0 datasets/unet/img
+CMD: python3 utils/cop3.py datasets/laptop/train/good datasets/segment/train/2/image datasets/segment/train/2/image
 '''
 import os
 import sys
@@ -13,7 +13,7 @@ dst = sys.argv[3]
 # create destination folder
 if not os.path.exists(dst):
     os.mkdir(dst)
-    
+
 # images
 images = os.listdir(med)
 
@@ -22,4 +22,3 @@ for image in images:
     path_dst = os.path.join(dst,image)
     print("copying:",path_src)
     shutil.copy(path_src,path_dst)
-    

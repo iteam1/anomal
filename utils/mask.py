@@ -1,6 +1,6 @@
 '''
 create mask
-CMD: python3 utils/mask.py datasets/unet/mask mask
+CMD: python3 utils/mask.py datasets/segment/train/1/mask label
 '''
 import os
 import sys
@@ -10,8 +10,8 @@ import numpy as np
 src = sys.argv[1]
 dst = sys.argv[2]
 
-lower = np.array([0,0,254])
-upper = np.array([0,0,255])
+lower = np.array([20,20,230])
+upper = np.array([50,50,255])
 
 if not os.path.exists(dst):
     os.mkdir(dst)
