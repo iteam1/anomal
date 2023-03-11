@@ -6,78 +6,46 @@ import random
 import sys
 
 DIM = 256
-src = 'datasets/unet/train/image'
-model_dir = "model/unet/model.hdf5"
+src = 'datasets/segment/train/border/image'
+#src = 'datasets/segment/test'
+model_border_dir = "model/unet/border/model.hdf5"
+model_line_dir = "model/unet/3/model.hdf5"
+
 images= os.listdir(src)
 print(len(images))
 
-class CropLayer(object):
-    def __init__(self, params, blobs):
-        self.xstart = 0
-        self.xend = 0
-        self.ystart = 0
-        self.yend = 0
-
-    # Our layer receives two inputs. We need to crop the first input blob
-    # to match a shape of the second one (keeping batch size and number of channels)
-    def getMemoryShapes(self, inputs):
-        inputShape, targetShape = inputs[0], inputs[1]
-        batchSize, numChannels = inputShape[0], inputShape[1]
-        height, width = targetShape[2], targetShape[3]
-
-        self.ystart = int((inputShape[2] - targetShape[2]) / 2)
-        self.xstart = int((inputShape[3] - targetShape[3]) / 2)
-        self.yend = self.ystart + height
-        self.xend = self.xstart + width
-
-        return [[batchSize, numChannels, height, width]]
-
-    def forward(self, inputs):
-        return [inputs[0][:,:,self.ystart:self.yend,self.xstart:self.xend]]
-
 # load model
-trained_model = load_model(model_dir)
+model_line = load_model(model_line_dir)
+model_border = load_model(model_border_dir)
 
 # predicting images
-image = random.choice(images)
-path = os.path.join(src,image)
-img = cv2.imread(path)
-gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-x = np.expand_dims(gray, axis=0)
-x = x.astype('float32')
-print(x.shape)
+#image = random.choice(images)
+for i,image in enumerate(images):
+    path = os.path.join(src,image)
+    img = cv2.imread(path)
+    #img = cv2.medianBlur(img,7)
+    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    x = np.expand_dims(gray, axis=0)
+    x = x.astype('float32')
+    print(x.shape)
 
-pred = trained_model.predict([x])
-pred = pred.reshape(pred.shape[1],pred.shape[2])
-pred = pred * 255
-pred = pred.astype('uint8')
-print(pred.shape,pred.min(),pred.max())
+    pred_line = model_line.predict([x])
+    pred_line = pred_line.reshape(pred_line.shape[1],pred_line.shape[2])
+    pred_line = pred_line * 255
+    pred_line = pred_line.astype('uint8')
+    pred_line = cv2.bitwise_not(pred_line)
+    print(pred_line.shape,pred_line.min(),pred_line.max())
 
-# Load the model.
-net = cv2.dnn.readNetFromCaffe("model/hed/deploy.prototxt","model/hed/hed_pretrained_bsds.caffemodel")
-cv2.dnn_registerLayer('Crop', CropLayer)
+    pred_border = model_border.predict([x])
+    pred_border = pred_border.reshape(pred_border.shape[1],pred_border.shape[2])
+    pred_border = pred_border * 255
+    pred_border = pred_border.astype('uint8')
+    print(pred_border.shape,pred_border.min(),pred_border.max())
 
-
-inp = cv2.dnn.blobFromImage(img, scalefactor=2.0, size=(DIM,DIM),
-                           mean=(104.00698793, 116.66876762, 122.67891434),
-                           swapRB=False, crop=False)
-net.setInput(inp)
-
-out = net.forward()
-out = out[0, 0]
-out  = out > 127
-out = out * 255
-out = out.astype('uint8')
-
-pred = cv2.cvtColor(pred,cv2.COLOR_GRAY2BGR)
-out = cv2.cvtColor(out,cv2.COLOR_GRAY2BGR)
-
-print(out.shape,pred.shape,img.shape)
-out = cv2.resize(out, (img.shape[1], img.shape[0]))
-
-mask = out + pred
-out = np.hstack([mask,out,pred,img])
-
-cv2.imshow('out',out)
-k = cv2.waitKey()
-cv2.destroyAllWindows()
+    pred = pred_line + pred_border
+    pred = cv2.cvtColor(pred,cv2.COLOR_GRAY2BGR)
+    out = cv2.addWeighted(pred,0.6,img,0.4,0)
+    # cv2.imshow('out',out)
+    # k = cv2.waitKey()
+    # cv2.destroyAllWindows()
+    cv2.imwrite(f'results/mask{i}.jpg',out)
