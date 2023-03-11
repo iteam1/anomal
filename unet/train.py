@@ -4,7 +4,7 @@ from data import *
 import tensorflow as tf
 import tensorflow as tf
 
-src = 'datasets/unet/train'
+src = '/content/anomal/datasets/segment/train/1'
 dst = 'model/unet/model.hdf5'
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -24,4 +24,4 @@ model = unet()
 
 model_checkpoint = ModelCheckpoint(dst, monitor='loss',verbose=1, save_best_only=True)
 
-model.fit_generator(myGene,steps_per_epoch=20,epochs=120,callbacks=[model_checkpoint])
+model.fit_generator(myGene,steps_per_epoch=20,epochs=50,callbacks=[model_checkpoint])
