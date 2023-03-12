@@ -69,7 +69,7 @@ src = 'datasets/laptop/test/crack'
 #src = 'datasets/laptop/noise'
 #src = 'datasets/segment/test'
 dst = 'results'
-THRESH = 0.5
+THRESH = 0.48
 count = 0 # count anomalous
 
 # model anomal
