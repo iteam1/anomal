@@ -120,7 +120,7 @@ if __name__ == "__main__":
     output = visualize(args,model_name,prediction)
     path = os.path.join(image_path,'top_left.jpg')
     cv2.imwrite(path,output)
-    
+
     # predict top right
     prediction = inferencer.predict(image=top_right)
     output = visualize(args,model_name,prediction)

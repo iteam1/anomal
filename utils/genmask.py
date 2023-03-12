@@ -6,8 +6,8 @@ import random
 import sys
 
 DIM = 256
-src = 'datasets/segment/train/border/image'
-#src = 'datasets/segment/test'
+#src = 'datasets/segment/train/border/image'
+src = 'datasets/segment/test'
 model_border_dir = "model/unet/border/model.hdf5"
 model_line_dir = "model/unet/lines/model.hdf5"
 
