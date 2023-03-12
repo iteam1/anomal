@@ -64,8 +64,8 @@ def mask(img,model_line,model_border):
     return out
 
 # init
-#src = 'datasets/laptop/noise'
-src = 'datasets/segment/test'
+src = 'datasets/laptop/noise'
+#src = 'datasets/segment/test'
 dst = 'results'
 THRESH = 0.5
 count = 0 # count anomalous
