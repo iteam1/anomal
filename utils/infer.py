@@ -1,6 +1,7 @@
 import os
 import sys
 import cv2
+import pickle
 import numpy as np
 from keras.models import load_model
 from anomalib.deploy import TorchInferencer
@@ -44,36 +45,19 @@ def post_process(prediction):
     output = cv2.addWeighted(output,0.4,heat_map,0.6,0)
     return output,pred_label,pred_score,pred_mask
 
-def mask(img,model_line,model_border):
-    # convert format
-    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    x = np.expand_dims(gray, axis=0)
-    x = x.astype('float32')
-    # predict
-    pred_line = model_line.predict([x])
-    pred_line = pred_line.reshape(pred_line.shape[1],pred_line.shape[2])
-    pred_line = pred_line * 255
-    pred_line = pred_line.astype('uint8')
-    pred_border = model_border.predict([x])
-    pred_border = pred_border.reshape(pred_border.shape[1],pred_border.shape[2])
-    pred_border = pred_border * 255
-    pred_border = pred_border.astype('uint8')
-    pred = pred_line + pred_border
-    pred = cv2.bitwise_not(pred)
-    out =  cv2.bitwise_and(img,img,mask = pred)
-    return out
-
 # init
 #src = 'test/crack'
-src = 'test/noise'
-#src = 'test/good'
+#src = 'test/noise'
+src = 'test/good'
 side =  'right'
 src = os.path.join(src,side)
 dst = 'results'
 THRESH = 0.5
 DIM = 256
-k = 70
+s = 3
+k = 124
 T = 500
+v = 1
 count = 0 # count anomalous
 
 # model anomal
@@ -81,9 +65,8 @@ config_path = 'model/stfpm/mvtec/laptop/run/config.yaml'
 model_path = 'model/stfpm/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
-# load model
-model_line = load_model("model/unet/border/model.hdf5")
-model_border = load_model("model/unet/lines/model.hdf5")
+# model classify
+classifier = pickle.load(open('model/classify/model.sav','rb'))
 
 if __name__ == "__main__":
     # list all images
@@ -95,45 +78,40 @@ if __name__ == "__main__":
         path = os.path.join(src,image)
         # read input image
         img = cv2.imread(path)
+
         # first predict
         prediction = inferencer.predict(image=img)
         pred_label = prediction.pred_label
         pred_score = prediction.pred_score
         # retest
         if pred_label == 'Anomalous' and pred_score > THRESH:
-            # get mask
-            pred_mask = prediction.pred_mask
+            pred_mask = prediction.pred_mask # get mask
+            # corner = find_corner(img,side) # get corner
             if side == 'left':
-                corner = pred_mask[:k,:k]
-                total = np.sum(corner)/255
+                corner = img[:k,:k]
+                corner_mask = pred_mask[:k,:k]
+                total = np.sum(corner_mask)/255
                 if total > T:
-                    img = cv2.medianBlur(img,3)
-                    # retest
-                    prediction = inferencer.predict(image=img)
-                    pred_label = prediction.pred_label
-                    pred_score = prediction.pred_score
-                    pred_mask = prediction.pred_mask
-                    corner = pred_mask[:k,:k]
-                    total = np.sum(corner)/255
-                    if pred_label == 'Anomalous' and pred_score > THRESH and total > T:
+                    x = cv2.cvtColor(corner,cv2.COLOR_BGR2GRAY)
+                    x = x/255.0
+                    x = x.reshape(1,-1)
+                    y = classifier.predict(x)
+                    if int(y) == v:
                         path = os.path.join(dst,image)
                         count +=1
-                        cv2.imwrite(path,pred_mask)
+                        cv2.imwrite(path,corner)
             else:
-                corner = pred_mask[:k,DIM-k:DIM]
-                total = np.sum(corner)/255
+                corner = img[:k,DIM-k:DIM]
+                corner_mask = pred_mask[:k,DIM-k:DIM]
+                total = np.sum(corner_mask)/255
                 if total > T:
-                    img = cv2.medianBlur(img,3)
-                    # retest
-                    prediction = inferencer.predict(image=img)
-                    pred_label = prediction.pred_label
-                    pred_score = prediction.pred_score
-                    pred_mask = prediction.pred_mask
-                    corner = pred_mask[:k,DIM-k:DIM]
-                    total = np.sum(corner)/255
-                    if pred_label == 'Anomalous' and pred_score > THRESH and total > T:
+                    x = cv2.cvtColor(corner,cv2.COLOR_BGR2GRAY)
+                    x = x/255.0
+                    x = x.reshape(1,-1)
+                    y = classifier.predict(x)
+                    if int(y) == v:
                         path = os.path.join(dst,image)
                         count +=1
-                        cv2.imwrite(path,pred_mask)
+                        cv2.imwrite(path,corner)
 
     print('Total anomalous:',count)
