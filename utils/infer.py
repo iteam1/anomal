@@ -73,6 +73,7 @@ dst = 'results'
 THRESH = 0.5
 DIM = 256
 k = 70
+T = 2
 count = 0 # count anomalous
 
 # model anomal
@@ -87,9 +88,10 @@ model_border = load_model("model/unet/lines/model.hdf5")
 if __name__ == "__main__":
     # list all images
     images = os.listdir(src)
+    n = len(images)
     # predict
-    for image in images:
-        print(image)
+    for i,image in enumerate(images):
+        print(i,"/",n,":",image)
         path = os.path.join(src,image)
         # read input image
         img = cv2.imread(path)
@@ -101,8 +103,18 @@ if __name__ == "__main__":
         # retest
         if pred_label == 'Anomalous' and pred_score > THRESH:
             # get mask
-            pred_mask = prediction.mask()
+            pred_mask = prediction.pred_mask
             if side == 'left':
+                corner = pred_mask[:k,:k]
+                total = np.sum(corner)/255
+                if total > T:
+                    cv2.imwrite('results/left.jpg',corner)
+                    count +=1
+            else:
+                corner = pred_mask[:k,DIM-k:DIM]
+                total = np.sum(corner)/255
+                if total > T:
+                    cv2.imwrite('results/right.jpg',corner)
+                    count +=1
 
-            count +=1
     print('Total anomalous:',count)
