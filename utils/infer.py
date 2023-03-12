@@ -64,12 +64,15 @@ def mask(img,model_line,model_border):
     return out
 
 # init
-#src = 'datasets/laptop/test/crack'
-#src = 'datasets/laptop/noise'
-src = 'datasets/laptop/train/good'
-#src = 'datasets/segment/test'
+#src = 'test/crack'
+#src = 'test/noise'
+src = 'test/good'
+side =  'left'
+src = os.path.join(src,side)
 dst = 'results'
 THRESH = 0.5
+DIM = 256
+k = 70
 count = 0 # count anomalous
 
 # model anomal
@@ -97,10 +100,9 @@ if __name__ == "__main__":
         pred_score = prediction.pred_score
         # retest
         if pred_label == 'Anomalous' and pred_score > THRESH:
-            mapped = mask(img,model_line,model_border)
-            prediction = inferencer.predict(image=mapped)
-            out,pred_label,pred_score,pred_mask = post_process(prediction)
-            path = os.path.join(dst,image)
-            cv2.imwrite(path,out)
+            # get mask
+            pred_mask = prediction.mask()
+            if side == 'left':
+
             count +=1
     print('Total anomalous:',count)
