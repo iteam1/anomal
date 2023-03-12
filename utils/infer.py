@@ -65,15 +65,15 @@ def mask(img,model_line,model_border):
 
 # init
 #src = 'test/crack'
-#src = 'test/noise'
-src = 'test/good'
+src = 'test/noise'
+#src = 'test/good'
 side =  'left'
 src = os.path.join(src,side)
 dst = 'results'
 THRESH = 0.5
 DIM = 256
 k = 70
-T = 2
+T = 500
 count = 0 # count anomalous
 
 # model anomal
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     n = len(images)
     # predict
     for i,image in enumerate(images):
-        print(i,"/",n,":",image)
+        print(i+1,"/",n,":",image)
         path = os.path.join(src,image)
         # read input image
         img = cv2.imread(path)
@@ -108,13 +108,16 @@ if __name__ == "__main__":
                 corner = pred_mask[:k,:k]
                 total = np.sum(corner)/255
                 if total > T:
-                    cv2.imwrite('results/left.jpg',corner)
+                    path = os.path.join(dst,image)
                     count +=1
+                    cv2.imwrite(path,pred_mask)
+
             else:
                 corner = pred_mask[:k,DIM-k:DIM]
                 total = np.sum(corner)/255
                 if total > T:
-                    cv2.imwrite('results/right.jpg',corner)
+                    path = os.path.join(dst,image)
                     count +=1
+                    cv2.imwrite(path,pred_mask)
 
     print('Total anomalous:',count)
