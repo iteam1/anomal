@@ -9,7 +9,7 @@ DIM = 256
 src = 'datasets/segment/train/border/image'
 #src = 'datasets/segment/test'
 model_border_dir = "model/unet/border/model.hdf5"
-model_line_dir = "model/unet/3/model.hdf5"
+model_line_dir = "model/unet/lines/model.hdf5"
 
 images= os.listdir(src)
 print(len(images))
@@ -33,7 +33,7 @@ for i,image in enumerate(images):
     pred_line = pred_line.reshape(pred_line.shape[1],pred_line.shape[2])
     pred_line = pred_line * 255
     pred_line = pred_line.astype('uint8')
-    pred_line = cv2.bitwise_not(pred_line)
+    #pred_line = cv2.bitwise_not(pred_line)
     print(pred_line.shape,pred_line.min(),pred_line.max())
 
     pred_border = model_border.predict([x])
