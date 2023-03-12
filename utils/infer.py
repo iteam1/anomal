@@ -69,7 +69,7 @@ src = 'datasets/laptop/test/crack'
 #src = 'datasets/laptop/noise'
 #src = 'datasets/segment/test'
 dst = 'results'
-THRESH = 0.48
+THRESH = 0.5
 count = 0 # count anomalous
 
 # model anomal
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         path = os.path.join(src,image)
         # read input image
         img = cv2.imread(path)
-        img = cv2.medianBlur(img,3)
+        # img = cv2.medianBlur(img,3)
         # first predict
         prediction = inferencer.predict(image=img)
         pred_label = prediction.pred_label
