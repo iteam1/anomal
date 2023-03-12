@@ -64,9 +64,9 @@ def mask(img,model_line,model_border):
     return out
 
 # init
-src = 'datasets/laptop/test/crack'
+#src = 'datasets/laptop/test/crack'
 #src = 'datasets/laptop/train/good'
-#src = 'datasets/laptop/noise'
+src = 'datasets/laptop/noise'
 #src = 'datasets/segment/test'
 dst = 'results'
 THRESH = 0.5
