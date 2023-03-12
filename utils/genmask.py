@@ -43,9 +43,11 @@ for i,image in enumerate(images):
     print(pred_border.shape,pred_border.min(),pred_border.max())
 
     pred = pred_line + pred_border
-    pred = cv2.cvtColor(pred,cv2.COLOR_GRAY2BGR)
-    out = cv2.addWeighted(pred,0.6,img,0.4,0)
+    pred = cv2.bitwise_not(pred)
+    #pred = cv2.cvtColor(pred,cv2.COLOR_GRAY2BGR)
+
+    out =  cv2.bitwise_and(img,img,mask = pred)#cv2.addWeighted(pred,0.6,img,0.4,0)
+    cv2.imwrite(f'results/mask{i}.jpg',out)
     # cv2.imshow('out',out)
     # k = cv2.waitKey()
     # cv2.destroyAllWindows()
-    cv2.imwrite(f'results/mask{i}.jpg',out)

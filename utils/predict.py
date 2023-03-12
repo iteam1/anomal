@@ -9,6 +9,7 @@ import random
 import numpy as np
 from argparse import ArgumentParser,Namespace
 from anomalib.post_processing import ImageResult
+#from anomalib.post_processing import Visualizer
 from anomalib.deploy import TorchInferencer, OpenVINOInferencer
 
 def get_args() -> Namespace:
@@ -43,7 +44,7 @@ def heatmap(anomaly_map,model):
     heat_map = heat_map.astype('uint8')
     heat_map = cv2.applyColorMap(heat_map, cv2.COLORMAP_JET)
     return heat_map
-    
+
 def visualize(args,model,prediction):
     '''
     Handle model prediction
@@ -60,7 +61,7 @@ def visualize(args,model,prediction):
     fontScale = 0.6 # fontScale
     color = (0,255,255)# Blue color in BGR
     thickness = 1 # Line thickness
-    
+
     # Extract prediction's components
     anomaly_map = prediction.anomaly_map # anomaly map np.array (256,256) (0-1)
     heat_map = heatmap(anomaly_map,model)
@@ -73,7 +74,7 @@ def visualize(args,model,prediction):
     pred_mask = prediction.pred_mask # binary map np.array (256,256)
     pred_score = prediction.pred_score # predict score (0.0-1.0)
     # segmentations = prediction.segmentations
-    
+
     # model customize
     if 'dfm' in model and args.openvino:
         pred_label = pred_label[0]
@@ -82,14 +83,14 @@ def visualize(args,model,prediction):
         else:
             pred_label = "Normal"
         output = image # dfm doest not have head map
-    
+
     elif ('cfa' in model or 'padim' in model) and args.openvino:
         if pred_label:
             pred_label = "Anomalous"
         else:
             pred_label = "Normal"
         output = prediction.segmentations #prediction.heat_map
-    
+
     elif ('reverse_distillation' in model or 'stfpm' in model):
         if pred_label:
             pred_label = "Anomalous"
@@ -98,7 +99,7 @@ def visualize(args,model,prediction):
         output = prediction.segmentations
     else:
         output = prediction.segmentations #prediction.heat_map
-    
+
     # post process output and heatmap
     h,w,c = output.shape
     org = (5,h-20)
@@ -160,7 +161,7 @@ if __name__ == "__main__":
             cv2.imwrite(os.path.join(image_path,name),mask)
         else:
             normal +=1
-            
+
         # predict top right
         prediction = inferencer.predict(image=top_right)
         output,pred,score,mask = visualize(args,model_name,prediction)
@@ -177,7 +178,7 @@ if __name__ == "__main__":
 
         end_time = time.time() - start_time
         print(i,"Inference timing consumption (s):",end_time)
-    
+
     # Summary
     print("total image:",len(images))
     print("total predictions",len(images)*2)
