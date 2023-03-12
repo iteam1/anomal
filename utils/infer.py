@@ -67,7 +67,7 @@ def mask(img,model_line,model_border):
 #src = 'test/crack'
 src = 'test/noise'
 #src = 'test/good'
-side =  'left'
+side =  'right'
 src = os.path.join(src,side)
 dst = 'results'
 THRESH = 0.5
@@ -95,7 +95,6 @@ if __name__ == "__main__":
         path = os.path.join(src,image)
         # read input image
         img = cv2.imread(path)
-        # img = cv2.medianBlur(img,3)
         # first predict
         prediction = inferencer.predict(image=img)
         pred_label = prediction.pred_label
@@ -108,16 +107,33 @@ if __name__ == "__main__":
                 corner = pred_mask[:k,:k]
                 total = np.sum(corner)/255
                 if total > T:
-                    path = os.path.join(dst,image)
-                    count +=1
-                    cv2.imwrite(path,pred_mask)
-
+                    img = cv2.medianBlur(img,3)
+                    # retest
+                    prediction = inferencer.predict(image=img)
+                    pred_label = prediction.pred_label
+                    pred_score = prediction.pred_score
+                    pred_mask = prediction.pred_mask
+                    corner = pred_mask[:k,:k]
+                    total = np.sum(corner)/255
+                    if pred_label == 'Anomalous' and pred_score > THRESH and total > T:
+                        path = os.path.join(dst,image)
+                        count +=1
+                        cv2.imwrite(path,pred_mask)
             else:
                 corner = pred_mask[:k,DIM-k:DIM]
                 total = np.sum(corner)/255
                 if total > T:
-                    path = os.path.join(dst,image)
-                    count +=1
-                    cv2.imwrite(path,pred_mask)
+                    img = cv2.medianBlur(img,3)
+                    # retest
+                    prediction = inferencer.predict(image=img)
+                    pred_label = prediction.pred_label
+                    pred_score = prediction.pred_score
+                    pred_mask = prediction.pred_mask
+                    corner = pred_mask[:k,DIM-k:DIM]
+                    total = np.sum(corner)/255
+                    if pred_label == 'Anomalous' and pred_score > THRESH and total > T:
+                        path = os.path.join(dst,image)
+                        count +=1
+                        cv2.imwrite(path,pred_mask)
 
     print('Total anomalous:',count)
