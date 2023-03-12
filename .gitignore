@@ -14,6 +14,7 @@ run
 sample*
 debug
 tmp
+test
 datasets
 result*
 model
