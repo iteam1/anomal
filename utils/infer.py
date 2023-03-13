@@ -6,50 +6,11 @@ import numpy as np
 from keras.models import load_model
 from anomalib.deploy import TorchInferencer
 
-def heatmap(anomaly_map):
-    min_val = 0.3
-    max_val = 0.6
-    heat_map = (anomaly_map - min_val)/(max_val - min_val)
-    heat_map = heat_map*255
-    heat_map = heat_map - heat_map.min()
-    heat_map = heat_map.astype('uint8')
-    heat_map = cv2.applyColorMap(heat_map, cv2.COLORMAP_JET)
-    return heat_map
-
-def post_process(prediction):
-    # Init
-    font = cv2.FONT_HERSHEY_SIMPLEX # font
-    fontScale = 0.6 # fontScale
-    color = (0,255,255)# Blue color in BGR
-    thickness = 1 # Line thickness
-
-    # Extract prediction's components
-    anomaly_map = prediction.anomaly_map
-    heat_map = heatmap(anomaly_map)
-    box_labels = prediction.box_labels
-    gt_boxes = prediction.gt_boxes
-    gt_mask = prediction.gt_mask
-    image = prediction.image
-    pred_boxes = prediction.pred_boxes
-    pred_label = prediction.pred_label
-    pred_mask = prediction.pred_mask
-    pred_score = prediction.pred_score
-    output = prediction.segmentations #prediction.heat_map
-
-    # post process output and heatmap
-    h,w,c = output.shape
-    org = (5,h-20)
-    text = pred_label + ":" + str(round(pred_score,4))
-    output = cv2.putText(output,text, org, font, fontScale, color, thickness, cv2.LINE_AA)
-    output = cv2.cvtColor(output,cv2.COLOR_BGR2RGB)
-    output = cv2.addWeighted(output,0.4,heat_map,0.6,0)
-    return output,pred_label,pred_score,pred_mask
-
 # init
 #src = 'test/crack'
 #src = 'test/noise'
 src = 'test/good'
-side =  'right'
+side =  'left'
 src = os.path.join(src,side)
 dst = 'results'
 THRESH = 0.5
@@ -91,6 +52,7 @@ if __name__ == "__main__":
                 corner = img[:k,:k]
                 corner_mask = pred_mask[:k,:k]
                 total = np.sum(corner_mask)/255
+                # check total area
                 if total > T:
                     x = cv2.cvtColor(corner,cv2.COLOR_BGR2GRAY)
                     x = x/255.0
@@ -104,6 +66,7 @@ if __name__ == "__main__":
                 corner = img[:k,DIM-k:DIM]
                 corner_mask = pred_mask[:k,DIM-k:DIM]
                 total = np.sum(corner_mask)/255
+                # check total area
                 if total > T:
                     x = cv2.cvtColor(corner,cv2.COLOR_BGR2GRAY)
                     x = x/255.0

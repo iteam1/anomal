@@ -1,27 +1,53 @@
-'''
-create mask
-CMD: python3 utils/mask.py datasets/segment/train/1/mask label
-'''
-import os
-import sys
-import cv2
+from keras.models import load_model
 import numpy as np
+import cv2
+import os
+import random
+import sys
 
-src = sys.argv[1]
-dst = sys.argv[2]
+DIM = 256
+#src = 'datasets/segment/train/border/image'
+src = 'datasets/segment/test'
+model_border_dir = "model/unet/border/model.hdf5"
+model_line_dir = "model/unet/lines/model.hdf5"
 
-lower = np.array([20,20,230])
-upper = np.array([50,50,255])
+images= os.listdir(src)
+print(len(images))
 
-if not os.path.exists(dst):
-    os.mkdir(dst)
+# load model
+model_line = load_model(model_line_dir)
+model_border = load_model(model_border_dir)
 
-imgs = os.listdir(src)
-
-for i in imgs:
-    path = os.path.join(src,i)
+# predicting images
+#image = random.choice(images)
+for i,image in enumerate(images):
+    path = os.path.join(src,image)
     img = cv2.imread(path)
-    mask = cv2.inRange(img,lower,upper)
-    #mask = cv2.bitwise_not(mask)
-    path = os.path.join(dst,i)
-    cv2.imwrite(path,mask)
+    #img = cv2.medianBlur(img,7)
+    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    x = np.expand_dims(gray, axis=0)
+    x = x.astype('float32')
+    print(x.shape)
+
+    pred_line = model_line.predict([x])
+    pred_line = pred_line.reshape(pred_line.shape[1],pred_line.shape[2])
+    pred_line = pred_line * 255
+    pred_line = pred_line.astype('uint8')
+    #pred_line = cv2.bitwise_not(pred_line)
+    print(pred_line.shape,pred_line.min(),pred_line.max())
+
+    pred_border = model_border.predict([x])
+    pred_border = pred_border.reshape(pred_border.shape[1],pred_border.shape[2])
+    pred_border = pred_border * 255
+    pred_border = pred_border.astype('uint8')
+    print(pred_border.shape,pred_border.min(),pred_border.max())
+
+    pred = pred_line + pred_border
+    pred = cv2.bitwise_not(pred)
+    #pred = cv2.cvtColor(pred,cv2.COLOR_GRAY2BGR)
+
+    out =  cv2.bitwise_and(img,img,mask = pred)#cv2.addWeighted(pred,0.6,img,0.4,0)
+    cv2.imwrite(f'results/mask{i}.jpg',out)
+    # cv2.imshow('out',out)
+    # k = cv2.waitKey()
+    # cv2.destroyAllWindows()
