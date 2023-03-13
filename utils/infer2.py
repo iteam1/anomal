@@ -71,7 +71,7 @@ def mask(img,model_line,model_border):
     return out
     
 # init
-src = 'test/crack'
+#src = 'test/crack'
 src = 'test/noise'
 #src = 'test/good'
 side =  'right'
@@ -125,7 +125,7 @@ if __name__ == "__main__":
                 # post process
                 out = post_process(prediction)
                 count +=1
-                
-        cv2.imwrite(path,out)
+                # write out
+                cv2.imwrite(path,out)
 
     print('Total anomalous:',count)
