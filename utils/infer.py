@@ -8,9 +8,9 @@ from anomalib.deploy import TorchInferencer
 
 # init
 #src = 'test/crack'
-#src = 'test/noise'
-src = 'test/good'
-side =  'left'
+src = 'test/noise'
+#src = 'test/good'
+side =  'right'
 src = os.path.join(src,side)
 dst = 'results'
 THRESH = 0.5

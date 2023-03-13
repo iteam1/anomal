@@ -72,7 +72,7 @@ def mask(img,model_line,model_border):
     
 # init
 src = 'test/crack'
-#src = 'test/noise'
+src = 'test/noise'
 #src = 'test/good'
 side =  'right'
 src = os.path.join(src,side)
