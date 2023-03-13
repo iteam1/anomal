@@ -11,11 +11,13 @@ footprint = disk(6)
 kernel = np.ones((2, 2), np.uint8)
 s = 3 # window side
 p = 50 # patient value
+K = 124
+R = 40
 DIM = 256
-side = "right"
+side = "left"
 #src = 'test/crack'
-#src = 'test/noise'
-src = 'test/good'
+src = 'test/noise'
+#src = 'test/good'
 src = os.path.join(src,side)
 dst = 'results'
 
@@ -31,7 +33,29 @@ n = len(images)
 if not os.path.exists(dst):
     os.mkdir(dst)
 
-def mask(img,side,model_line):
+def round_corner(img,side,r):
+    # flip image if right side
+    if side == 'right':
+        img = cv2.flip(img,1)
+    h,w,c = img.shape
+    blank = np.zeros((h,w),np.uint8)
+    # r = int(h/2)
+    center = (r,r)
+    axes_length = (r,r)
+    angle  = 180
+    start_angle = 0
+    end_angle = 90
+    color = (255)
+    thickness = -1
+    out = cv2.ellipse(blank,center,axes_length,angle,start_angle,end_angle,color,thickness)
+    out[r:,:] = 255
+    out[:,r:] = 255
+    # revert flip
+    if side == 'right':
+        out = cv2.flip(out,1)
+    return out
+    
+def corner(img,side,model_line):
     # Convert to gray
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     h,w = gray.shape
@@ -81,26 +105,14 @@ def mask(img,side,model_line):
     
     pred[hy:hy+1,:] = 255
     pred[:hy,:] = 0 # remove right over part
-    
-    # find corner
-    if side == 'left':
-        top_left = (hy,vx)
-        bottom_right = (h,w)
-    else:
-        top_left = (hy,0)
-        bottom_right = (h,vx)
         
     print("vx:",vx,"hy:",hy)
-    # erode
-    pred = cv2.erode(pred, kernel, iterations=2)
-
-    out = pred #pred # cv2.bitwise_and(img,img,mask = pred)
     
     if side == "left":
-        out = img[hy:,vx:]
+        out = img[hy:,vx:] #out = img[hy:hy+K,vx:vx+K]
     else:
-        out = img[hy:,:vx]
-
+        out = img[hy:,:vx]# out = img[hy:hy+K,vx-K:vx]
+    
     return out
 
 for i,image in enumerate(images):
@@ -109,7 +121,9 @@ for i,image in enumerate(images):
     path = os.path.join(src,image)
     img = cv2.imread(path)
     # generate mask
-    out = mask(img,side,model_line)
+    roi = corner(img,side,model_line)
+    rounded_mask = round_corner(roi,side,R)
+    out = cv2.bitwise_and(roi,roi,mask = rounded_mask)
     #write out
     path = os.path.join(dst,image)
     cv2.imwrite(path,out)

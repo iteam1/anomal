@@ -7,10 +7,10 @@ from keras.models import load_model
 from anomalib.deploy import TorchInferencer
 
 # init
-#src = 'test/crack0'
+#src = 'test/crack2'
 src = 'test/noise3'
-#src = 'test/good0'
-side =  'left'
+#src = 'test/good2'
+side =  'right'
 src = os.path.join(src,side)
 dst = 'results'
 THRESH = 0.5
@@ -36,6 +36,7 @@ if __name__ == "__main__":
         path = os.path.join(src,image)
         # read input image
         img = cv2.imread(path)
+        # img = cv2.medianBlur(img,11)
 
         # first predict
         prediction = inferencer.predict(image=img)
