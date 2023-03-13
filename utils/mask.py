@@ -14,7 +14,7 @@ p = 50 # patient value
 K = 124
 R = 40
 DIM = 256
-side = "left"
+side = "right"
 #src = 'test/crack'
 src = 'test/noise'
 #src = 'test/good'
@@ -105,13 +105,15 @@ def corner(img,side,model_line):
     
     pred[hy:hy+1,:] = 255
     pred[:hy,:] = 0 # remove right over part
-        
-    print("vx:",vx,"hy:",hy)
     
-    if side == "left":
-        out = img[hy:,vx:] #out = img[hy:hy+K,vx:vx+K]
-    else:
-        out = img[hy:,:vx]# out = img[hy:hy+K,vx-K:vx]
+    out = pred
+        
+    # print("vx:",vx,"hy:",hy)
+    
+    # if side == "left":
+    #     out = img[hy:,vx:] #out = img[hy:hy+K,vx:vx+K]
+    # else:
+    #     out = img[hy:,:vx]# out = img[hy:hy+K,vx-K:vx]
     
     return out
 
@@ -122,8 +124,8 @@ for i,image in enumerate(images):
     img = cv2.imread(path)
     # generate mask
     roi = corner(img,side,model_line)
-    rounded_mask = round_corner(roi,side,R)
-    out = cv2.bitwise_and(roi,roi,mask = rounded_mask)
+    # rounded_mask = round_corner(roi,side,R)
+    # out = cv2.bitwise_and(roi,roi,mask = rounded_mask)
     #write out
     path = os.path.join(dst,image)
-    cv2.imwrite(path,out)
+    cv2.imwrite(path,roi)
