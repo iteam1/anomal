@@ -26,9 +26,6 @@ config_path = 'model/stfpm/mvtec/laptop/run/config.yaml'
 model_path = 'model/stfpm/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
-# model classify
-classifier = pickle.load(open('model/classify/model.sav','rb'))
-
 if __name__ == "__main__":
     # list all images
     images = os.listdir(src)
@@ -47,34 +44,22 @@ if __name__ == "__main__":
         # retest
         if pred_label == 'Anomalous' and pred_score > THRESH:
             pred_mask = prediction.pred_mask # get mask
-            # corner = find_corner(img,side) # get corner
+            path = os.path.join(dst,image)
             if side == 'left':
                 corner = img[:k,:k]
                 corner_mask = pred_mask[:k,:k]
                 total = np.sum(corner_mask)/255
                 # check total area
                 if total > T:
-                    x = cv2.cvtColor(corner,cv2.COLOR_BGR2GRAY)
-                    x = x/255.0
-                    x = x.reshape(1,-1)
-                    y = classifier.predict(x)
-                    if int(y) == v:
-                        path = os.path.join(dst,image)
-                        count +=1
-                        cv2.imwrite(path,corner)
+                    count +=1
+                    cv2.imwrite(path,corner)
             else:
                 corner = img[:k,DIM-k:DIM]
                 corner_mask = pred_mask[:k,DIM-k:DIM]
                 total = np.sum(corner_mask)/255
                 # check total area
                 if total > T:
-                    x = cv2.cvtColor(corner,cv2.COLOR_BGR2GRAY)
-                    x = x/255.0
-                    x = x.reshape(1,-1)
-                    y = classifier.predict(x)
-                    if int(y) == v:
-                        path = os.path.join(dst,image)
-                        count +=1
-                        cv2.imwrite(path,corner)
+                    count +=1
+                    cv2.imwrite(path,corner)
 
     print('Total anomalous:',count)
