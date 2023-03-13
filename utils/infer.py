@@ -7,10 +7,10 @@ from keras.models import load_model
 from anomalib.deploy import TorchInferencer
 
 # init
-#src = 'test/crack'
-src = 'test/noise'
-#src = 'test/good'
-side =  'right'
+#src = 'test/crack0'
+src = 'test/noise3'
+#src = 'test/good0'
+side =  'left'
 src = os.path.join(src,side)
 dst = 'results'
 THRESH = 0.5

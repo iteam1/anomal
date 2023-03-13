@@ -12,10 +12,10 @@ kernel = np.ones((2, 2), np.uint8)
 s = 3 # window side
 p = 50 # patient value
 DIM = 256
-side = "left"
+side = "right"
 #src = 'test/crack'
-src = 'test/noise'
-#src = 'test/good'
+#src = 'test/noise'
+src = 'test/good'
 src = os.path.join(src,side)
 dst = 'results'
 
@@ -96,10 +96,10 @@ def mask(img,side,model_line):
 
     out = pred #pred # cv2.bitwise_and(img,img,mask = pred)
     
-    # if side == "left":
-    #     out = img[hy:,vx:]
-    # else:
-    #     out = img[hy:,:vx]
+    if side == "left":
+        out = img[hy:,vx:]
+    else:
+        out = img[hy:,:vx]
 
     return out
 
