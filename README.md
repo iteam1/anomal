@@ -24,9 +24,14 @@ optimization's requirements:
 [references](https://openvinotoolkit.github.io/anomalib/reference_guide/index.html)
 
 [notebooks](https://github.com/openvinotoolkit/anomalib/tree/main/notebooks)
+
 # references
 
-[How to remove noise opencv(https://stackoverflow.com/questions/62042172/how-to-remove-noise-in-image-opencv-python)
+[draw rounded rectangle](https://stackoverflow.com/questions/18973103/how-to-draw-a-rounded-rectangle-rectangle-with-rounded-corners-with-opencv)
+
+[How to remove noise opencv](https://stackoverflow.com/questions/62042172/how-to-remove-noise-in-image-opencv-python)
+
+[scikit-image](https://scikit-image.org/docs/stable/auto_examples/applications/plot_morphology.html)
 
 [install tensorflow gpu](https://www.tensorflow.org/install/pip)
 
@@ -37,8 +42,6 @@ optimization's requirements:
 [FgSegNetv2](https://github.com/lim-anggun/FgSegNet_v2)
 
 [FgSegNet](https://github.com/lim-anggun/FgSegNet)
-
-[scikit-image](https://scikit-image.org/docs/stable/auto_examples/applications/plot_morphology.html)
 
 [hed-edge-detector](https://github.com/ashukid/hed-edge-detector)
 
