@@ -7,9 +7,9 @@ from keras.models import load_model
 from anomalib.deploy import TorchInferencer
 
 # init
-#src = 'test/crack2'
-src = 'test/noise3'
-#src = 'test/good2'
+src = 'test/crack3'
+#src = 'test/noise2'
+#src = 'test/good3'
 side =  'right'
 src = os.path.join(src,side)
 dst = 'results'
@@ -26,6 +26,10 @@ config_path = 'model/stfpm/mvtec/laptop/run/config.yaml'
 model_path = 'model/stfpm/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
+config_path = 'model/stfpm0/mvtec/laptop0/run/config.yaml'
+model_path = 'model/stfpm0/mvtec/laptop0/run/weights/model.ckpt'
+inferencer2 = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
+
 if __name__ == "__main__":
     # list all images
     images = os.listdir(src)
@@ -39,7 +43,7 @@ if __name__ == "__main__":
         # img = cv2.medianBlur(img,11)
 
         # first predict
-        prediction = inferencer.predict(image=img)
+        prediction = inferencer2.predict(image=img)
         pred_label = prediction.pred_label
         pred_score = prediction.pred_score
         # retest
