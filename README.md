@@ -13,6 +13,10 @@ optimization's requirements:
 
 *Note*
 
+[SIINet](https://github.com/ErenTuring/SIINet)
+
+[DLink](https://github.com/zlckanata/DeepGlobe-Road-Extraction-Challenge)
+
 [kaggle notebook](https://www.kaggle.com/code/ipythonx/mvtec-ad-anomaly-detection-with-anomalib-library)
 
 [source](https://github.com/openvinotoolkit/anomalib/tree/main/anomalib)
