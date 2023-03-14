@@ -8,11 +8,18 @@ from torch.autograd import Variable as V
 from dinknet import DinkNet34
 
 SHAPE = (256,256)
-side = 'left'
-src = 'test/crack'
+side = 'right'
+#src = 'test/crack'
 #src = 'test/good'
-#src = 'test/noise'
+src = 'test/noise'
 src = os.path.join(src,side)
+dst = 'output/mask'
+# create destination folder
+if not os.path.exists(dst):
+    os.mkdir(dst)
+else:
+    shutil.rmtree(dst, ignore_errors=True)
+    os.mkdir(dst)
 
 class TTAFrame():
     def __init__(self, net):
@@ -49,6 +56,10 @@ solver = TTAFrame(DinkNet34)
 solver.load('model/dsi/log01_dink34.th')
 
 if __name__ == '__main__':
-    img = cv2.imread('test/good/left/002.png')
-    mask = solver.predict(img)
-    cv2.imwrite('mask.jpg',mask)
+    images = os.listdir(src)
+    for image in images:
+        path = os.path.join(src,image)
+        img = cv2.imread(path)
+        mask = solver.predict(img)
+        path = os.path.join(dst,image)
+        cv2.imwrite(path,mask)
