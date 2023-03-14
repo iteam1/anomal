@@ -3,18 +3,13 @@ import sys
 import cv2
 import pickle
 import numpy as np
-from keras.models import load_model
 from anomalib.deploy import TorchInferencer
 
 # init
-side =  'left'
-# src = 'test/crack'
-# src = 'test/noise'
-# src = 'test/good'
-# src = os.path.join(src,side)
-src = "sliced" 
+#src = "datasets/ooo/train/good" 
+src = "datasets/ooo/test/crack" 
 dst = 'results'
-THRESH = 0.5
+THRESH = 0.52
 DIM = 256
 s = 3
 k = 124
@@ -62,8 +57,10 @@ def post_process(prediction):
     return output
 
 # model anomal
-config_path = 'model/stfpm/mvtec/laptop/run/config.yaml'
-model_path = 'model/stfpm/mvtec/laptop/run/weights/model.ckpt'
+# config_path = 'model/stfpm/mvtec/laptop/run/config.yaml'
+# model_path = 'model/stfpm/mvtec/laptop/run/weights/model.ckpt'
+config_path = 'model/ooo/mvtec/ooo/run/config.yaml'
+model_path = 'model/ooo/mvtec/ooo/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 if __name__ == "__main__":
@@ -84,25 +81,9 @@ if __name__ == "__main__":
         pred_score = prediction.pred_score
         # retest
         if pred_label == 'Anomalous' and pred_score > THRESH:
-            pred_mask = prediction.pred_mask # get mask
+            out = post_process(prediction)
             path = os.path.join(dst,image)
-            if side == 'left':
-                corner = img[:k,:k]
-                corner_mask = pred_mask[:k,:k]
-                total = np.sum(corner_mask)/255
-                # check total area
-                if total > T:
-                    count +=1
-                    out = post_process(prediction)
-                    cv2.imwrite(path,out)
-            else:
-                corner = img[:k,DIM-k:DIM]
-                corner_mask = pred_mask[:k,DIM-k:DIM]
-                total = np.sum(corner_mask)/255
-                # check total area
-                if total > T:
-                    count +=1
-                    out = post_process(prediction)
-                    cv2.imwrite(path,out)
+            cv2.imwrite(path,out)
+            count +=1
 
     print('Total anomalous:',count)
