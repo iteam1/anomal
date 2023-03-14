@@ -59,7 +59,7 @@ def round_corner(img,side,r):
         out = cv2.flip(out,1)
     return out
     
-def corner(img,side,model_line):
+def mask(img,side,model_line):
     # Convert to gray
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     h,w = gray.shape
@@ -112,11 +112,6 @@ def corner(img,side,model_line):
     
     out = pred        
     print("vx:",vx,"hy:",hy)
-
-    if side == "left":
-        out = img[hy:,vx:] # out = img[hy:hy+K,vx:vx+K]
-    else:
-        out = img[hy:,:vx] # out = img[hy:hy+K,vx-K:vx]
     
     return out
 
@@ -126,9 +121,7 @@ for i,image in enumerate(images):
     path = os.path.join(src,image)
     img = cv2.imread(path)
     # generate mask
-    roi = corner(img,side,model_line)
-    rounded_mask = round_corner(roi,side,R)
-    out = cv2.bitwise_and(roi,roi,mask = rounded_mask)
+    out = mask(img,side,model_line)
     #write out
     path = os.path.join(dst,image)
     cv2.imwrite(path,out)
