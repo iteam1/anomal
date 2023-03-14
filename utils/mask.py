@@ -1,8 +1,9 @@
-from keras.models import load_model
-import numpy as np
 import cv2
 import os
 import sys
+import shutil
+import numpy as np
+from keras.models import load_model
 from skimage.morphology import closing
 from skimage.morphology import disk  # noqa
 
@@ -19,7 +20,7 @@ side = "right"
 #src = 'test/noise'
 src = 'test/good'
 src = os.path.join(src,side)
-dst = 'results'
+dst = 'output/mask'
 
 # load model
 model_line_dir = "model/unet/lines/model.hdf5"
@@ -31,6 +32,9 @@ n = len(images)
 
 # create destination folder
 if not os.path.exists(dst):
+    os.mkdir(dst)
+else:
+    shutil.rmtree(dst, ignore_errors=True)
     os.mkdir(dst)
 
 def round_corner(img,side,r):
