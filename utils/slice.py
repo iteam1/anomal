@@ -4,7 +4,7 @@ import shutil
 import random
 import numpy as np
 src = 'test/crack/right'
-dst = 'sliced'
+dst = 'output/sliced'
 if not os.path.exists(dst):
     os.mkdir(dst)
 else:
