@@ -8,11 +8,21 @@ from torch.autograd import Variable as V
 from dinknet import DinkNet34
 
 SHAPE = (256,256)
+side = 'left'
+src = 'test/crack'
+#src = 'test/good'
+#src = 'test/noise'
+src = os.path.join(src,side)
+
 class TTAFrame():
     def __init__(self, net):
         self.device = 'cpu' #'cuda' if torch.cuda.is_available() else 'cpu'
         self.net = net().to(self.device)
         # self.net = torch.nn.DataParallel(self.net, device_ids=range(torch.cuda.device_count()))
+        
+    def load(self, path):
+        self.net.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+        #self.net.load_state_dict(torch.load(path))
 
     def predict(self, img):
         img = cv2.resize(img, SHAPE)
@@ -29,12 +39,11 @@ class TTAFrame():
         mask1 = mask[:4] + mask[4:, :, ::-1]
         mask2 = mask1[:2] + mask1[2:, ::-1]
         mask3 = mask2[0] + np.rot90(mask2[1])[::-1, ::-1]
-
+        
+        # post process
+        mask3[mask3 > 4.0] = 255
+        mask3[mask3 <= 4.0] = 0
         return mask3
-
-    def load(self, path):
-        self.net.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
-        #self.net.load_state_dict(torch.load(path))
 
 solver = TTAFrame(DinkNet34)
 solver.load('model/dsi/log01_dink34.th')
@@ -42,5 +51,4 @@ solver.load('model/dsi/log01_dink34.th')
 if __name__ == '__main__':
     img = cv2.imread('test/good/left/002.png')
     mask = solver.predict(img)
-    print(mask.max(),max.min())
     cv2.imwrite('mask.jpg',mask)
