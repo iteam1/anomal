@@ -1,5 +1,9 @@
-import cv2
+'''
+python3 utils/predict.py samples/crack
+'''
 import os
+import sys
+import cv2
 import torch
 import numpy as np
 import torch.nn as nn
@@ -8,7 +12,7 @@ from torch.autograd import Variable as V
 from anomalib.deploy import TorchInferencer
 from skimage.morphology import closing,disk
 
-src = 'samples/scratch'
+src = sys.argv[1]
 dst = 'results'
 
 # init
@@ -275,8 +279,8 @@ model_path = 'model/stfpm/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 # load retest anomal model
-config_path = 'model/ooo/mvtec/ooo/run/config.yaml'
-model_path = 'model/ooo/mvtec/ooo/run/weights/model.ckpt'
+config_path = 'model/ooo2/mvtec/ooo/run/config.yaml'
+model_path = 'model/ooo2/mvtec/ooo/run/weights/model.ckpt'
 tester = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 # load dsi model
