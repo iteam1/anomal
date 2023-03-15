@@ -12,8 +12,8 @@ SHAPE = (256,256)
 DIM = 256
 side = 'left'
 #src = 'test/crack'
-src = 'test/good'
-#src = 'test/noise'
+#src = 'test/good'
+src = 'test/noise'
 src = os.path.join(src,side)
 dst = 'output/mask'
 # create destination folder
