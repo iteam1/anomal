@@ -10,7 +10,7 @@ from skimage.morphology import closing,disk
 
 SHAPE = (256,256)
 DIM = 256
-side = 'right'
+side = 'left'
 #src = 'test/crack'
 src = 'test/good'
 #src = 'test/noise'
