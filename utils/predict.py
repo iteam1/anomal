@@ -221,6 +221,48 @@ def mask(img,side,solver):
     mask = cv2.resize(mask,(DIM,DIM),interpolation=cv2.INTER_AREA)
     return out,mask
 
+def predict(img,side,solver):
+    label = None
+    # resize image
+    img = cv2.resize(img,(DIM,DIM),interpolation=cv2.INTER_AREA)
+    # first predict
+    prediction = inferencer.predict(image=img)
+    pred_label = prediction.pred_label
+    pred_score = prediction.pred_score
+    # retest
+    if pred_label == 'Anomalous' and pred_score > THRESH1:
+        print('retest',image)
+        # mask imput image
+        out,out_mask = mask(img,side,solver)
+        prediction = tester.predict(image=out)
+        pred_label = prediction.pred_label
+        pred_score = prediction.pred_score
+        pred_mask = prediction.pred_mask
+        if pred_label == 'Anomalous' and pred_score > THRESH2:
+            final_mask = cv2.bitwise_and(out_mask,pred_mask)
+            # check corner condition
+            if side == 'left':
+                corner = final_mask[:K,:K]
+            else:
+                corner = final_mask[0:K,DIM-K:DIM]
+            area = np.sum(corner)/255
+            if area > T:
+                # conclude
+                label = "crack"
+                return out,label,prediction
+            else:
+                # conclude
+                label = "normal"
+                return out,label,prediction
+        else:
+            # conclude
+            label = "normal"
+            return out,label,prediction
+    else:
+        # conclude
+        label = "normal"
+        return out,label,prediction
+                
 # load dsi model
 solver = TTAFrame(DinkNet34)
 solver.load('model/dsi/log01_dink34.th')
@@ -251,34 +293,12 @@ if __name__ == "__main__":
         path = os.path.join(src,image)
         # read input image
         img = cv2.imread(path)
-        img = cv2.resize(img,(DIM,DIM),interpolation=cv2.INTER_AREA)
-
-        # first predict
-        prediction = inferencer.predict(image=img)
-        pred_label = prediction.pred_label
-        pred_score = prediction.pred_score
-        
-        # retest
-        if pred_label == 'Anomalous' and pred_score > THRESH1:
-            print('retest',image)
-            # mask imput image
-            out,out_mask = mask(img,side,solver)
-            prediction = tester.predict(image=out)
-            pred_label = prediction.pred_label
-            pred_score = prediction.pred_score
-            pred_mask = prediction.pred_mask
-            if pred_label == 'Anomalous' and pred_score > THRESH2:
-                final_mask = cv2.bitwise_and(out_mask,pred_mask)
-                if side == 'left':
-                    corner = final_mask[:K,:K]
-                else:
-                    corner = final_mask[0:K,DIM-K:DIM]
-                area = np.sum(corner)/255
-                if area > T:
-                    # check corner condition
-                    out = post_process(prediction)
-                    path = os.path.join(dst,image)
-                    cv2.imwrite(path,out)
-                    count +=1
+        # predict
+        out,label,prediction = predict(img,side,solver)
+        if label == "crack":
+            result = post_process(prediction)
+            count +=1
+            path = os.path.join(dst,image)
+            cv2.imwrite(path,result)
 
     print('Total anomalous:',count)
