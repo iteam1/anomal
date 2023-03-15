@@ -9,18 +9,15 @@ from anomalib.deploy import TorchInferencer
 from skimage.morphology import closing,disk
 
 # init
-side = 'right'
-src = 'test/good'
+side = 'left'
+src = 'test/noise'
 src = os.path.join(src,side)
 dst = 'results'
 THRESH1 = 0.50 # for inferencer anomal
 THRESH2 = 0.52 # for checker anomal
 DIM = 256 # image dimension size
 SHAPE = (DIM,DIM) # shape of image
-s = 3
-k = 124
-T = 500
-v = 1
+T = 500 # threshold of total white pixel range
 count = 0 # count anomalous
 
 def heatmap(anomaly_map):
