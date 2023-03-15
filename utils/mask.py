@@ -10,9 +10,9 @@ from skimage.morphology import closing,disk
 
 SHAPE = (256,256)
 DIM = 256
-side = 'left'
-src = 'test/crack'
-#src = 'test/good'
+side = 'right'
+#src = 'test/crack'
+src = 'test/good'
 #src = 'test/noise'
 src = os.path.join(src,side)
 dst = 'output/mask'
@@ -172,24 +172,30 @@ def fillin(mask,cord):
     mask = cv.dilate(mask, kernel, iterations=2)
     return mask
 
+def mask(img,side,solver):
+    mask = solver.predict(img)
+    mask = RLSA_Y(mask,20)
+    mask = RLSA_X(mask,20)
+    mask = closing(mask,disk(3))
+    mask,cord,roi = post_process(mask,side)
+    mask = fillin(mask,cord)
+    out = cv.bitwise_and(roi,roi,mask = mask.astype('uint8'))
+    out = cv.resize(out,(DIM,DIM),interpolation=cv.INTER_AREA)
+    return out
+
+# load dsi model
 solver = TTAFrame(DinkNet34)
 solver.load('model/dsi/log01_dink34.th')
 
 if __name__ == '__main__':
     images = os.listdir(src)
-    for image in images:
+    for i,image in enumerate(images):
         path = os.path.join(src,image)
-        print(image)
+        print(f'{i}/{len(images)}:{image}')
+        # read image
         img = cv.imread(path)
-        mask = solver.predict(img)
-        mask = RLSA_Y(mask,20)
-        mask = RLSA_X(mask,20)
-        
-        mask = closing(mask,disk(3))
-        mask,cord,roi = post_process(mask,side)
-        mask = fillin(mask,cord)
-        
-        out = cv.bitwise_and(roi,roi,mask = mask.astype('uint8'))
-        out = cv.resize(out,(DIM,DIM),interpolation=cv.INTER_AREA)
+        # mask
+        out = mask(img,side,solver)
+        # write out
         path = os.path.join(dst,image)
         cv.imwrite(path,out)

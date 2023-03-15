@@ -1,13 +1,11 @@
 import os
-import sys
 import cv2
-import pickle
 import numpy as np
 from anomalib.deploy import TorchInferencer
 
 # init
-#src = "datasets/ooo/train/good" 
-src = "datasets/ooo/test/crack" 
+src = "datasets/ooo/train/good" 
+#src = "datasets/ooo/test/crack" 
 dst = 'results'
 THRESH = 0.52
 DIM = 256
