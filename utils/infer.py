@@ -8,17 +8,18 @@ from torch.autograd import Variable as V
 from anomalib.deploy import TorchInferencer
 from skimage.morphology import closing,disk
 
-# init
 side = 'right'
-src = 'test/crack'
+src = 'test/good'
 src = os.path.join(src,side)
 dst = 'results'
+
+# init
 THRESH1 = 0.50 # for inferencer anomal
 THRESH2 = 0.52 # for checker anomal
-K = 100 # corner window size
+K = 64 # corner window size
 DIM = 256 # image dimension size
 SHAPE = (DIM,DIM) # shape of image
-T = 100 # threshold of total white pixel range
+T = 120 # threshold of total white pixel range
 count = 0 # count anomalous
 
 def heatmap(anomaly_map):

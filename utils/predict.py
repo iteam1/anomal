@@ -8,15 +8,16 @@ from torch.autograd import Variable as V
 from anomalib.deploy import TorchInferencer
 from skimage.morphology import closing,disk
 
-# init
 src = 'samples/scratch'
 dst = 'results'
+
+# init
 THRESH1 = 0.50 # for inferencer anomal
 THRESH2 = 0.52 # for checker anomal
-K = 100 # corner window size
+K = 64 # corner window size
 DIM = 256 # image dimension size
 SHAPE = (DIM,DIM) # shape of image
-T = 100 # threshold of total white pixel range
+T = 120 # threshold of total white pixel range
 count = 0 # count anomalous
 
 class TTAFrame():
@@ -283,35 +284,44 @@ solver = TTAFrame(DinkNet34)
 solver.load('model/dsi/log01_dink34.th')
 
 if __name__ == "__main__":
+    
     # list all images
     images = os.listdir(src)
     n = len(images)
+    
     # predict
     for i,image in enumerate(images):
         print(i+1,"/",n,":",image)
         path = os.path.join(src,image)
+        
         # read input image
         img_org = cv2.imread(path)
         H,W,_ = img_org.shape
         top_left = img_org[0:DIM,0:DIM]
         top_right = img_org[0:DIM,W-DIM:W]
+        
         # predict top left
         side = "left"
         out,label,prediction = predict(top_left,side,solver)
         if label == "crack":
+            print(label)
             result = post_process(prediction)
             count +=1
             name = image.split('.')[0] + '_left.jpg'
             path = os.path.join(dst,name)
-            cv2.imwrite(path,result)
+            # cv2.imwrite(path,result)
+            cv2.imwrite(path,out)
+        
         # predict top right
         side = "right"
         out,label,prediction = predict(top_right,side,solver)
         if label == "crack":
+            print(label)
             result = post_process(prediction)
             count +=1
             name = image.split('.')[0] + '_right.jpg'
             path = os.path.join(dst,name)
-            cv2.imwrite(path,result)
+            # cv2.imwrite(path,result)
+            cv2.imwrite(path,out)
 
     print('Total anomalous:',count)
