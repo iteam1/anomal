@@ -17,7 +17,8 @@ dst = 'results'
 
 # init
 THRESH1 = 0.50 # for inferencer anomal
-THRESH2 = 0.52 # for checker anomal
+THRESH2 = 0.53 # for checker anomal
+P = 10
 K = 48 # corner window size
 DIM = 256 # image dimension size
 SHAPE = (DIM,DIM) # shape of image
@@ -224,6 +225,39 @@ def fillin(mask,cord):
     mask = cv2.erode(mask, kernel, iterations=2)
     return mask
 
+def rounded(mask,side):
+    corner = True
+    h,w = mask.shape
+    
+    if side == 'right':
+        mask = cv2.flip(mask,1)
+
+    l_x = 1
+    l_y = 1
+    for i in range(1,w-1):
+        point = mask[3:4,i:i+1]
+        if point == 255:
+            l_x = i
+            break
+        
+    for i in range(1,h-1):
+        point = mask[i:i+1,1:2]
+        if point == 255:
+            l_y = i
+            break
+        
+    if l_x > K and l_y > K:
+        l_y = 1
+        l_x = 1
+        corner = False
+    
+    if corner: mask = cv2.ellipse(mask,(l_y+3,l_x+3),(l_y-3,l_x),0,0,360,(255),-1)
+        
+    if side == 'right':
+        mask = cv2.flip(mask,1)
+        
+    return mask
+
 def mask_img(input,side,solver):
     m = solver.predict(input)
     m = RLSA_Y(m,20)
@@ -232,12 +266,13 @@ def mask_img(input,side,solver):
     m,cord,roi = gen_mask(input,m,side)
     m = fillin(m,cord)
     #rounded
-    
+    m = rounded(m,side)
     m = m.astype('uint8')
     out = cv2.bitwise_and(roi,roi,mask = m)
     out = cv2.resize(out,(DIM,DIM),interpolation=cv2.INTER_AREA)
+    roi = cv2.resize(roi,(DIM,DIM),interpolation=cv2.INTER_AREA)
     m = cv2.resize(m,(DIM,DIM),interpolation=cv2.INTER_AREA)
-    return out,m
+    return out,roi,m
 
 def predict(input,side,solver):
     label = None
@@ -251,7 +286,7 @@ def predict(input,side,solver):
     if pred_label == 'Anomalous' and pred_score > THRESH1:
         print('retest')
         # mask imput image
-        out,out_mask = mask_img(image,side,solver)
+        out,out_color,out_mask = mask_img(image,side,solver)
         prediction = tester.predict(image=out)
         pred_label = prediction.pred_label
         pred_score = prediction.pred_score
@@ -264,22 +299,22 @@ def predict(input,side,solver):
             else:
                 corner = final_mask[0:K,DIM-K:DIM]
             area = np.sum(corner)/255
-            if area > T:
+            if area > T:                
                 # conclude
                 label = "crack"
-                return out,label,prediction
+                return label,prediction
             else:
                 # conclude
                 label = "normal"
-                return out,label,prediction
+                return label,prediction
         else:
             # conclude
             label = "normal"
-            return out,label,prediction
+            return label,prediction
     else:
         # conclude
         label = "normal"
-        return image,label,prediction
+        return label,prediction
                 
 # load dsi model
 solver = TTAFrame(DinkNet34)
@@ -320,7 +355,7 @@ if __name__ == "__main__":
         
         # predict top left
         side = "left"
-        out,label,prediction = predict(top_left,side,solver)
+        label,prediction = predict(top_left,side,solver)
         if label == "crack":
             print(label)
             result = post_process(prediction)
@@ -332,7 +367,7 @@ if __name__ == "__main__":
         
         # predict top right
         side = "right"
-        out,label,prediction = predict(top_right,side,solver)
+        label,prediction = predict(top_right,side,solver)
         if label == "crack":
             print(label)
             result = post_process(prediction)
@@ -341,4 +376,4 @@ if __name__ == "__main__":
             path = os.path.join(dst,name)
             cv2.imwrite(path,result)
 
-    print('Total anomalous:',count)
+    print('Total crack:',count,'/',len(images)*2)
