@@ -231,6 +231,8 @@ def mask_img(input,side,solver):
     m = closing(m,disk(3))
     m,cord,roi = gen_mask(input,m,side)
     m = fillin(m,cord)
+    #rounded
+    
     m = m.astype('uint8')
     out = cv2.bitwise_and(roi,roi,mask = m)
     out = cv2.resize(out,(DIM,DIM),interpolation=cv2.INTER_AREA)
