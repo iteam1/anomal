@@ -18,12 +18,13 @@ dst = 'results'
 # init
 THRESH1 = 0.50 # for inferencer anomal
 THRESH2 = 0.53 # for checker anomal
-TOTAL = 600 # total anomaly score threshold
+THRESH3 = 0.50
+TOTAL = 650 # total anomaly score threshold
 P = 10
 K = 48 # corner window size
 DIM = 256 # image dimension size
 SHAPE = (DIM,DIM) # shape of image
-T = 200 # threshold of total white pixel range
+T = 100 # threshold of total white pixel range
 count = 0 # count anomalous
 
 class TTAFrame():
@@ -219,7 +220,7 @@ def fillin(mask,cord):
             else:
                 mask[j,i]= 255
     # horizontal fill
-    kernel = np.ones((1,3), np.uint8)
+    kernel = np.ones((1,5), np.uint8)
     mask = cv2.dilate(mask, kernel, iterations=4)
     # erode full mask
     kernel = np.ones((3,3), np.uint8)
@@ -227,6 +228,8 @@ def fillin(mask,cord):
     return mask
 
 def rounded(mask,side):
+    p = 8
+    d= 1
     corner = True
     h,w = mask.shape
     
@@ -252,7 +255,7 @@ def rounded(mask,side):
         l_x = 1
         corner = False
     
-    if corner: mask = cv2.ellipse(mask,(l_y+3,l_x+3),(l_y-3,l_x),0,0,360,(255),-1)
+    if corner: mask = cv2.ellipse(mask,(l_y+p,l_x+p),(l_y-d,l_x-d),0,0,360,(255),-1)
         
     if side == 'right':
         mask = cv2.flip(mask,1)
@@ -292,17 +295,18 @@ def predict(input,side,solver):
         pred_label = prediction.pred_label
         pred_score = prediction.pred_score
         pred_mask = prediction.pred_mask
+        final_mask = cv2.bitwise_and(out_mask,pred_mask)
         anomaly_map = prediction.anomaly_map
+        #fill mask
+        anomaly_map = anomaly_map * (final_mask == 255)
+        anomaly_map = anomaly_map * (anomaly_map>THRESH3)
         if pred_label == 'Anomalous' and pred_score > THRESH2:
-            final_mask = cv2.bitwise_and(out_mask,pred_mask)
             # check corner condition
             if side == 'left':
                 anomal_value = anomaly_map[:K,:K]
-                anomal_value = anomal_value * (anomal_value>0.5)
                 corner = final_mask[:K,:K]
             else:
-                anomal_value = anomaly_map[0:K,DIM-K:DIM]
-                anomal_value = anomal_value * (anomal_value>0.5)
+                anomal_value = anomaly_map[:K,DIM-K:DIM]
                 corner = final_mask[0:K,DIM-K:DIM]
             area = np.sum(corner)/255
             anomal_value = np.sum(anomal_value)

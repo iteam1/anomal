@@ -30,6 +30,7 @@ model
 imgs
 sliced
 output
+unknown
 
 # specific files
 Miniconda3-py38_22.11.1-1-Linux-x86_64.sh
