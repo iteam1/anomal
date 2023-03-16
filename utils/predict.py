@@ -18,6 +18,7 @@ dst = 'results'
 # init
 THRESH1 = 0.50 # for inferencer anomal
 THRESH2 = 0.53 # for checker anomal
+TOTAL = 600 # total anomaly score threshold
 P = 10
 K = 48 # corner window size
 DIM = 256 # image dimension size
@@ -291,17 +292,24 @@ def predict(input,side,solver):
         pred_label = prediction.pred_label
         pred_score = prediction.pred_score
         pred_mask = prediction.pred_mask
+        anomaly_map = prediction.anomaly_map
         if pred_label == 'Anomalous' and pred_score > THRESH2:
             final_mask = cv2.bitwise_and(out_mask,pred_mask)
             # check corner condition
             if side == 'left':
+                anomal_value = anomaly_map[:K,:K]
+                anomal_value = anomal_value * (anomal_value>0.5)
                 corner = final_mask[:K,:K]
             else:
+                anomal_value = anomaly_map[0:K,DIM-K:DIM]
+                anomal_value = anomal_value * (anomal_value>0.5)
                 corner = final_mask[0:K,DIM-K:DIM]
             area = np.sum(corner)/255
-            if area > T:                
+            anomal_value = np.sum(anomal_value)
+            if area > T and anomal_value > TOTAL:                
                 # conclude
                 label = "crack"
+                print(anomal_value)
                 return label,prediction
             else:
                 # conclude
