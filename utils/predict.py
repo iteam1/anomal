@@ -18,10 +18,10 @@ dst = 'results'
 # init
 THRESH1 = 0.50 # for inferencer anomal
 THRESH2 = 0.52 # for checker anomal
-K = 64 # corner window size
+K = 48 # corner window size
 DIM = 256 # image dimension size
 SHAPE = (DIM,DIM) # shape of image
-T = 120 # threshold of total white pixel range
+T = 200 # threshold of total white pixel range
 count = 0 # count anomalous
 
 class TTAFrame():
@@ -160,7 +160,7 @@ def RLSA_Y(img_src, zero_length):
 def gen_mask(img,mask,side):
     height,width = mask.shape
     s = 2
-    p = 50
+    p = 40
     # find vertical line
     v_ = []
     for i in range(width-s):
@@ -176,13 +176,21 @@ def gen_mask(img,mask,side):
             vx = width
         mask[:,vx:vx+1] = 0 # draw line
         mask[:,vx:] = 0 # remove left over part for extracting horizontal line
+    # patient
+    if side == "left":
+        if vx > p:
+            vx = 0
+    else:
+        if vx < width - p:
+            vx  =width
     
     # find horizontal line
     h_ = []
     for i in range(height-s):
         h = mask[i:i+s,:]
-        h_.append(np.sum(height))
+        h_.append(np.sum(h))
     hy = np.argmax(h_)
+    # patience
     if hy > p:
         hy = 0
     
@@ -208,8 +216,12 @@ def fillin(mask,cord):
                 break
             else:
                 mask[j,i]= 255
-    kernel = np.ones((1, 3), np.uint8)
-    mask = cv2.dilate(mask, kernel, iterations=2)
+    # horizontal fill
+    kernel = np.ones((1,3), np.uint8)
+    mask = cv2.dilate(mask, kernel, iterations=4)
+    # erode full mask
+    kernel = np.ones((3,3), np.uint8)
+    mask = cv2.erode(mask, kernel, iterations=2)
     return mask
 
 def mask_img(input,side,solver):
@@ -279,8 +291,8 @@ model_path = 'model/stfpm/mvtec/laptop/run/weights/model.ckpt'
 inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 # load retest anomal model
-config_path = 'model/ooo2/mvtec/ooo/run/config.yaml'
-model_path = 'model/ooo2/mvtec/ooo/run/weights/model.ckpt'
+config_path = 'model/ooo/mvtec/ooo/run/config.yaml'
+model_path = 'model/ooo/mvtec/ooo/run/weights/model.ckpt'
 tester = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 # load dsi model
@@ -314,7 +326,7 @@ if __name__ == "__main__":
             name = image.split('.')[0] + '_left.jpg'
             path = os.path.join(dst,name)
             # cv2.imwrite(path,result)
-            cv2.imwrite(path,out)
+            cv2.imwrite(path,result)
         
         # predict top right
         side = "right"
@@ -325,7 +337,6 @@ if __name__ == "__main__":
             count +=1
             name = image.split('.')[0] + '_right.jpg'
             path = os.path.join(dst,name)
-            # cv2.imwrite(path,result)
-            cv2.imwrite(path,out)
+            cv2.imwrite(path,result)
 
     print('Total anomalous:',count)
