@@ -282,43 +282,31 @@ def predict(input,side,solver):
     label = None
     # resize image
     image = cv2.resize(input,(DIM,DIM),interpolation=cv2.INTER_AREA)
-    # first predict
-    prediction = inferencer.predict(image=image)
+    out,out_color,out_mask = mask_img(image,side,solver)
+    prediction = tester.predict(image=out)
     pred_label = prediction.pred_label
     pred_score = prediction.pred_score
-    # retest
-    if pred_label == 'Anomalous' and pred_score > THRESH1:
-        print('retest')
-        # mask imput image
-        out,out_color,out_mask = mask_img(image,side,solver)
-        prediction = tester.predict(image=out)
-        pred_label = prediction.pred_label
-        pred_score = prediction.pred_score
-        pred_mask = prediction.pred_mask
-        final_mask = cv2.bitwise_and(out_mask,pred_mask)
-        anomaly_map = prediction.anomaly_map
-        #fill mask
-        anomaly_map = anomaly_map * (final_mask == 255)
-        anomaly_map = anomaly_map * (anomaly_map>THRESH3)
-        if pred_label == 'Anomalous' and pred_score > THRESH2:
-            # check corner condition
-            if side == 'left':
-                anomal_value = anomaly_map[:K,:K]
-                corner = final_mask[:K,:K]
-            else:
-                anomal_value = anomaly_map[:K,DIM-K:DIM]
-                corner = final_mask[0:K,DIM-K:DIM]
-            area = np.sum(corner)/255
-            anomal_value = np.sum(anomal_value)
-            print(area,anomal_value)
-            if area > T and anomal_value > TOTAL:                
-                # conclude
-                label = "crack"
-                return label,prediction
-            else:
-                # conclude
-                label = "normal"
-                return label,prediction
+    pred_mask = prediction.pred_mask
+    final_mask = cv2.bitwise_and(out_mask,pred_mask)
+    anomaly_map = prediction.anomaly_map
+    #fill mask
+    anomaly_map = anomaly_map * (final_mask == 255)
+    anomaly_map = anomaly_map * (anomaly_map>THRESH3)
+    if pred_label == 'Anomalous' and pred_score > THRESH2:
+        # check corner condition
+        if side == 'left':
+            anomal_value = anomaly_map[:K,:K]
+            corner = final_mask[:K,:K]
+        else:
+            anomal_value = anomaly_map[:K,DIM-K:DIM]
+            corner = final_mask[0:K,DIM-K:DIM]
+        area = np.sum(corner)/255
+        anomal_value = np.sum(anomal_value)
+        print(area,anomal_value)
+        if area > T and anomal_value > TOTAL:                
+            # conclude
+            label = "crack"
+            return label,prediction
         else:
             # conclude
             label = "normal"
