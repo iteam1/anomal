@@ -3,8 +3,11 @@ Tool copy original images and save to destination folder, run from ./dates
 CMD: python3 imcop.py
 '''
 import os
+import sys
 import shutil
 import random
+
+m = int(sys.argv[1])
 
 # create samples folder
 dst = 'samples'
@@ -25,7 +28,7 @@ for thing in things:
     if a and b and c:
         dates.append(thing)
 
-n = [1,2,3]
+n = list(range(m))
 
 for date in dates:
     print('Searching on:',date)
