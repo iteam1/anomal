@@ -38,7 +38,7 @@ for date in dates:
         a = os.path.isdir(path)
         b = len(item) == 14
         c = item.isalnum()
-        d = random.choice(n) == 1 # random sampling
+        d = random.choice(n) == 0 # random sampling
         # if all the conditions are sartified
         if a and b and c and d:
             file = os.path.join(date,item,'image_crop/top_crop.jpg')
