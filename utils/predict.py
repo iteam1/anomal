@@ -24,7 +24,7 @@ P = 10
 K = 48 # corner window size
 DIM = 256 # image dimension size
 SHAPE = (DIM,DIM) # shape of image
-T = 300 # threshold of total white pixel range
+T = 250 # threshold of total white pixel range
 count = 0 # count anomalous
 
 class TTAFrame():
@@ -220,8 +220,8 @@ def fillin(mask,cord):
             else:
                 mask[j,i]= 255
     # horizontal fill
-    kernel = np.ones((1,5), np.uint8)
-    mask = cv2.dilate(mask, kernel, iterations=4)
+    kernel = np.ones((1,6), np.uint8)
+    mask = cv2.dilate(mask, kernel, iterations=3)
     # erode full mask
     kernel = np.ones((3,3), np.uint8)
     mask = cv2.erode(mask, kernel, iterations=2)
@@ -229,7 +229,7 @@ def fillin(mask,cord):
 
 def rounded(mask,side):
     p = 8
-    d= 1
+    d = 0
     corner = True
     h,w = mask.shape
     
