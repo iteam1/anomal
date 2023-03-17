@@ -6,6 +6,10 @@ Sample data: sftp://172.16.20.115/media/greystone/data/LAPTOPBOOTH/Edge_detectio
 user: greystone
 pass: greystone@ivaluate
 
+Files:
+image_crop/top_crop.jpg
+sftp://172.16.21.0/media/DATA_LAPTOP_BOOTH/1.LaptopBooth/4.History/6.History_Fedex_V2/01_06_2022/01062022165004/image_crop/top
+
 DVT data: sftp://172.16.21.0/media/DATA_LAPTOP_BOOTH/1.LaptopBooth/4.History/6.History_Fedex_V2
 usr: greystone
 pass: greystone
@@ -18,7 +22,3 @@ Examples:
 13102022142509
 13102022143626
 19052022155050
-
-Files:
-image_crop/top_crop.jpg
-sftp://172.16.21.0/media/DATA_LAPTOP_BOOTH/1.LaptopBooth/4.History/6.History_Fedex_V2/01_06_2022/01062022165004/image_crop/top

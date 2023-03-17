@@ -1,6 +1,6 @@
 '''
 Tool copy original images and save to destination folder, run from ./dates
-CMD: python3 imcop.py
+CMD: python3 cop.py 10
 '''
 import os
 import sys
