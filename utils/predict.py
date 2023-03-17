@@ -18,13 +18,13 @@ dst = 'results'
 # init
 THRESH1 = 0.50 # for inferencer anomal
 THRESH2 = 0.53 # for checker anomal
-THRESH3 = 0.50
-TOTAL = 650 # total anomaly score threshold
+THRESH3 = 0.5
+TOTAL = 500 # total anomaly score threshold
 P = 10
 K = 48 # corner window size
 DIM = 256 # image dimension size
 SHAPE = (DIM,DIM) # shape of image
-T = 100 # threshold of total white pixel range
+T = 300 # threshold of total white pixel range
 count = 0 # count anomalous
 
 class TTAFrame():
@@ -310,10 +310,10 @@ def predict(input,side,solver):
                 corner = final_mask[0:K,DIM-K:DIM]
             area = np.sum(corner)/255
             anomal_value = np.sum(anomal_value)
+            print(area,anomal_value)
             if area > T and anomal_value > TOTAL:                
                 # conclude
                 label = "crack"
-                print(anomal_value)
                 return label,prediction
             else:
                 # conclude
