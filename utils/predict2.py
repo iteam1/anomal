@@ -19,14 +19,13 @@ dst = 'results'
 THRESH1 = 0.50 # for inferencer anomal
 THRESH2 = 0.53 # for checker anomal
 THRESH3 = 0.5
-TOTAL = 550 # total anomaly score threshold
+TOTAL = 400 # total anomaly score threshold
 P = 10
 K = 48 # corner window size
 DIM = 256 # image dimension size
 SHAPE = (DIM,DIM) # shape of image
 T = 250 # threshold of total white pixel range
 count = 0 # count anomalous
-
 class TTAFrame():
     def __init__(self, net):
         self.device = 'cpu' #'cuda' if torch.cuda.is_available() else 'cpu'
@@ -355,11 +354,9 @@ if __name__ == "__main__":
         
         # predict top left
         side = "left"
-        label,prediction = predict(top_left,side,solver)
-        if label == "crack":
-            print(label)
+        label_left,prediction = predict(top_left,side,solver)
+        if label_left == "crack":
             result = post_process(prediction)
-            count +=1
             name = image.split('.')[0] + '_left.jpg'
             path = os.path.join(dst,name)
             # cv2.imwrite(path,result)
@@ -367,13 +364,16 @@ if __name__ == "__main__":
         
         # predict top right
         side = "right"
-        label,prediction = predict(top_right,side,solver)
-        if label == "crack":
-            print(label)
+        label_right,prediction = predict(top_right,side,solver)
+        if label_right == "crack":
             result = post_process(prediction)
-            count +=1
             name = image.split('.')[0] + '_right.jpg'
             path = os.path.join(dst,name)
             cv2.imwrite(path,result)
+        
+        # conclude
+        if label_left == 'crack' or label_right == 'crack':
+            count +=1
+            print(image,' ==> crack')
 
-    print('Total crack:',count,'/',len(images)*2)
+    print('Total crack:',count,'/',len(images))
