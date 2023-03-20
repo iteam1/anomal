@@ -359,7 +359,6 @@ if __name__ == "__main__":
             result = post_process(prediction)
             name = image.split('.')[0] + '_left.jpg'
             path = os.path.join(dst,name)
-            # cv2.imwrite(path,result)
             cv2.imwrite(path,result)
         
         # predict top right
