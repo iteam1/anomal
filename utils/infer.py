@@ -1,6 +1,12 @@
+'''
+env/bin/python3 main.py -i path/to/your/image.jpg -d result.json
+python3 main.py -i path/to/your/image.jpg -d result.json
+'''
 import cv2
-import os
+import time
+import json
 import torch
+import argparse
 import numpy as np
 import torch.nn as nn
 from dinknet import DinkNet34
@@ -8,19 +14,59 @@ from torch.autograd import Variable as V
 from anomalib.deploy import TorchInferencer
 from skimage.morphology import closing,disk
 
-side = 'right'
-src = 'test/good'
-src = os.path.join(src,side)
-dst = 'results'
+# init parser
+parser = argparse.ArgumentParser(description = 'Anomal detection')
+# add argument to parser
+parser.add_argument('-i','--img',type = str, help = 'directory to image', required = True)
+parser.add_argument('-d','--dest',type = str, help = 'directory to save json file', required = True)
+parser.add_argument('-w','--write',action = 'store_true', help = 'option to save debug image',required=False)
+# create arguments
+args = parser.parse_args()
 
-# init
+# initialize
 THRESH1 = 0.50 # for inferencer anomal
-THRESH2 = 0.52 # for checker anomal
-K = 64 # corner window size
+THRESH2 = 0.53 # for checker anomal
+THRESH3 = 0.5 # anomalt threhsold
+TOTAL = 450 # total anomaly score threshold
+P = 10
+K = 48 # corner window size
 DIM = 256 # image dimension size
 SHAPE = (DIM,DIM) # shape of image
-T = 120 # threshold of total white pixel range
-count = 0 # count anomalous
+T = 250 # threshold of total white pixel range
+label = 'normal' # prediction label
+postions = [] # crack position
+
+class TTAFrame():
+    def __init__(self, net):
+        self.device = 'cpu' #'cuda' if torch.cuda.is_available() else 'cpu'
+        self.net = net().to(self.device)
+        # self.net = torch.nn.DataParallel(self.net, device_ids=range(torch.cuda.device_count()))
+        
+    def load(self, path):
+        self.net.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+        #self.net.load_state_dict(torch.load(path))
+
+    def predict(self, img):
+        img = cv2.resize(img, SHAPE)
+        img90 = np.array(np.rot90(img))
+        img1 = np.concatenate([img[None], img90[None]])
+        img2 = np.array(img1)[:, ::-1]
+        img3 = np.concatenate([img1, img2])
+        img4 = np.array(img3)[:, :, ::-1]
+        img5 = np.concatenate([img3, img4]).transpose(0, 3, 1, 2)
+        img5 = np.array(img5, np.float32) / 255.0 * 3.2 - 1.6
+        img5 = V(torch.Tensor(img5).to(self.device))
+
+        mask = self.net.forward(img5).squeeze().cpu().data.numpy()  # .squeeze(1)
+        mask1 = mask[:4] + mask[4:, :, ::-1]
+        mask2 = mask1[:2] + mask1[2:, ::-1]
+        mask3 = mask2[0] + np.rot90(mask2[1])[::-1, ::-1]
+        
+        # post process
+        threshold = 3.0
+        mask3[mask3 > threshold] = 255
+        mask3[mask3 <= threshold] = 0
+        return mask3
 
 def heatmap(anomaly_map):
     min_val = 0.3
@@ -122,45 +168,14 @@ def RLSA_Y(img_src, zero_length):
     _, tmpImg = cv2.threshold(tmpImg, 100, 255, cv2.THRESH_BINARY)
 
     return tmpImg
-class TTAFrame():
-    def __init__(self, net):
-        self.device = 'cpu' #'cuda' if torch.cuda.is_available() else 'cpu'
-        self.net = net().to(self.device)
-        # self.net = torch.nn.DataParallel(self.net, device_ids=range(torch.cuda.device_count()))
-        
-    def load(self, path):
-        self.net.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
-        #self.net.load_state_dict(torch.load(path))
-
-    def predict(self, img):
-        img = cv2.resize(img, SHAPE)
-        img90 = np.array(np.rot90(img))
-        img1 = np.concatenate([img[None], img90[None]])
-        img2 = np.array(img1)[:, ::-1]
-        img3 = np.concatenate([img1, img2])
-        img4 = np.array(img3)[:, :, ::-1]
-        img5 = np.concatenate([img3, img4]).transpose(0, 3, 1, 2)
-        img5 = np.array(img5, np.float32) / 255.0 * 3.2 - 1.6
-        img5 = V(torch.Tensor(img5).to(self.device))
-
-        mask = self.net.forward(img5).squeeze().cpu().data.numpy()  # .squeeze(1)
-        mask1 = mask[:4] + mask[4:, :, ::-1]
-        mask2 = mask1[:2] + mask1[2:, ::-1]
-        mask3 = mask2[0] + np.rot90(mask2[1])[::-1, ::-1]
-        
-        # post process
-        threshold = 3.0
-        mask3[mask3 > threshold] = 255
-        mask3[mask3 <= threshold] = 0
-        return mask3
     
-def gen_mask(mask,side):
-    H,W = mask.shape
+def gen_mask(img,mask,side):
+    height,width = mask.shape
     s = 2
-    p = 50
+    p = 40
     # find vertical line
     v_ = []
-    for i in range(W-s):
+    for i in range(width-s):
         v = mask[:,i:i+s]
         v_.append(np.sum(v))
     vx = np.argmax(v_)
@@ -169,17 +184,25 @@ def gen_mask(mask,side):
         mask[:,vx:vx+1] = 0 # draw line
         mask[:,:vx] = 0 # remove left over part for extracting horizontal line
     else:
-        if vx < W - p:
-            vx = W
+        if vx < width - p:
+            vx = width
         mask[:,vx:vx+1] = 0 # draw line
         mask[:,vx:] = 0 # remove left over part for extracting horizontal line
+    # patient
+    if side == "left":
+        if vx > p:
+            vx = 0
+    else:
+        if vx < width - p:
+            vx  =width
     
     # find horizontal line
     h_ = []
-    for i in range(H-s):
+    for i in range(height-s):
         h = mask[i:i+s,:]
         h_.append(np.sum(h))
     hy = np.argmax(h_)
+    # patience
     if hy > p:
         hy = 0
     
@@ -205,37 +228,105 @@ def fillin(mask,cord):
                 break
             else:
                 mask[j,i]= 255
-    kernel = np.ones((1, 3), np.uint8)
-    mask = cv2.dilate(mask, kernel, iterations=2)
+    # horizontal fill
+    kernel = np.ones((1,6), np.uint8)
+    mask = cv2.dilate(mask, kernel, iterations=3)
+    # erode full mask
+    kernel = np.ones((3,3), np.uint8)
+    mask = cv2.erode(mask, kernel, iterations=2)
     return mask
 
-def mask(img,side,solver):
-    mask = solver.predict(img)
-    mask = RLSA_Y(mask,20)
-    mask = RLSA_X(mask,20)
-    mask = closing(mask,disk(3))
-    mask,cord,roi = gen_mask(mask,side)
-    mask = fillin(mask,cord)
-    mask = mask.astype('uint8')
-    out = cv2.bitwise_and(roi,roi,mask = mask)
+def rounded(mask,side):
+    p = 8
+    d = 0
+    corner = True
+    h,w = mask.shape
+    
+    if side == 'right':
+        mask = cv2.flip(mask,1)
+
+    l_x = 1
+    l_y = 1
+    for i in range(1,w-1):
+        point = mask[3:4,i:i+1]
+        if point == 255:
+            l_x = i
+            break
+        
+    for i in range(1,h-1):
+        point = mask[i:i+1,1:2]
+        if point == 255:
+            l_y = i
+            break
+        
+    if l_x > K and l_y > K:
+        l_y = 1
+        l_x = 1
+        corner = False
+    
+    if corner: mask = cv2.ellipse(mask,(l_y+p,l_x+p),(l_y-d,l_x-d),0,0,360,(255),-1)
+        
+    if side == 'right':
+        mask = cv2.flip(mask,1)
+        
+    return mask
+
+def mask_img(input,side,solver):
+    m = solver.predict(input)
+    m = RLSA_Y(m,20)
+    m = RLSA_X(m,20)
+    m = closing(m,disk(3))
+    m,cord,roi = gen_mask(input,m,side)
+    m = fillin(m,cord)
+    #rounded
+    m = rounded(m,side)
+    m = m.astype('uint8')
+    out = cv2.bitwise_and(roi,roi,mask = m)
     out = cv2.resize(out,(DIM,DIM),interpolation=cv2.INTER_AREA)
-    mask = cv2.resize(mask,(DIM,DIM),interpolation=cv2.INTER_AREA)
-    return out,mask
+    roi = cv2.resize(roi,(DIM,DIM),interpolation=cv2.INTER_AREA)
+    m = cv2.resize(m,(DIM,DIM),interpolation=cv2.INTER_AREA)
+    return out,roi,m
 
-# load dsi model
-solver = TTAFrame(DinkNet34)
-solver.load('model/dsi/log01_dink34.th')
-
-# model anomal model
-config_path = 'model/stfpm/mvtec/laptop/run/config.yaml'
-model_path = 'model/stfpm/mvtec/laptop/run/weights/model.ckpt'
-# config_path = 'model/ooo/mvtec/ooo/run/config.yaml'
-# model_path = 'model/ooo/mvtec/ooo/run/weights/model.ckpt'
-inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
+def predict(input,side,solver):
+    label = None
+    # resize image
+    image = cv2.resize(input,(DIM,DIM),interpolation=cv2.INTER_AREA)
+    out,out_color,out_mask = mask_img(image,side,solver)
+    prediction = tester.predict(image=out)
+    pred_label = prediction.pred_label
+    pred_score = prediction.pred_score
+    pred_mask = prediction.pred_mask
+    final_mask = cv2.bitwise_and(out_mask,pred_mask)
+    anomaly_map = prediction.anomaly_map
+    #fill mask
+    anomaly_map = anomaly_map * (final_mask == 255)
+    anomaly_map = anomaly_map * (anomaly_map>THRESH3)
+    if pred_label == 'Anomalous' and pred_score > THRESH2:
+        # check corner condition
+        if side == 'left':
+            anomal_value = anomaly_map[:K,:K]
+            corner = final_mask[:K,:K]
+        else:
+            anomal_value = anomaly_map[:K,DIM-K:DIM]
+            corner = final_mask[0:K,DIM-K:DIM]
+        area = np.sum(corner)/255
+        anomal_value = np.sum(anomal_value)
+        if area > T and anomal_value > TOTAL:                
+            # conclude
+            label = "crack"
+            return label,prediction
+        else:
+            # conclude
+            label = "normal"
+            return label,prediction
+    else:
+        # conclude
+        label = "normal"
+        return label,prediction
 
 # load retest anomal model
-config_path = 'model/ooo/mvtec/ooo/run/config.yaml'
-model_path = 'model/ooo/mvtec/ooo/run/weights/model.ckpt'
+config_path = 'model/lim/mvtec/lim/run/config.yaml'
+model_path = 'model/lim/mvtec/lim/run/weights/model.ckpt'
 tester = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 # load dsi model
@@ -243,43 +334,52 @@ solver = TTAFrame(DinkNet34)
 solver.load('model/dsi/log01_dink34.th')
 
 if __name__ == "__main__":
-    # list all images
-    images = os.listdir(src)
-    n = len(images)
-    # predict
-    for i,image in enumerate(images):
-        print(i+1,"/",n,":",image)
-        path = os.path.join(src,image)
-        # read input image
-        img = cv2.imread(path)
-        img = cv2.resize(img,(DIM,DIM),interpolation=cv2.INTER_AREA)
-
-        # first predict
-        prediction = inferencer.predict(image=img)
-        pred_label = prediction.pred_label
-        pred_score = prediction.pred_score
+    
+    # start counting time
+    start_time = time.time()
         
-        # retest
-        if pred_label == 'Anomalous' and pred_score > THRESH1:
-            print('retest',image)
-            # mask imput image
-            out,out_mask = mask(img,side,solver)
-            prediction = tester.predict(image=out)
-            pred_label = prediction.pred_label
-            pred_score = prediction.pred_score
-            pred_mask = prediction.pred_mask
-            if pred_label == 'Anomalous' and pred_score > THRESH2:
-                final_mask = cv2.bitwise_and(out_mask,pred_mask)
-                if side == 'left':
-                    corner = final_mask[:K,:K]
-                else:
-                    corner = final_mask[0:K,DIM-K:DIM]
-                area = np.sum(corner)/255
-                if area > T:
-                    # check corner condition
-                    out = post_process(prediction)
-                    path = os.path.join(dst,image)
-                    cv2.imwrite(path,out)
-                    count +=1
-
-    print('Total anomalous:',count)
+    # read input image
+    img_org = cv2.imread(args.img)
+    H,W,_ = img_org.shape
+    top_left = img_org[0:DIM,0:DIM]
+    top_right = img_org[0:DIM,W-DIM:W]
+    
+    # predict top left
+    label_left,prediction = predict(top_left,"left",solver)
+    if label_left == "crack":
+        postions.append('left')
+        result = post_process(prediction)
+        if args.write: cv2.imwrite('corner_left.jpg',result)
+    
+    # predict top right
+    label_right,prediction = predict(top_right,"right",solver)
+    if label_right == "crack":
+        postions.append('right')
+        result = post_process(prediction)
+        if args.write: cv2.imwrite('corner_right.jpg',result)
+    
+    # conclude
+    if label_left == 'crack' or label_right == 'crack':
+        label = "crack"
+    
+    print(args.img,' ==> ',label)
+        
+    # stop counting time
+    end_time = time.time() - start_time
+    end_time = round(end_time,3)
+    
+    # create result dictionary
+    result = {'image':args.img,
+              'prediction':label,
+              'positions': postions,
+              'consuming time': end_time
+              }
+    
+    # serializing to json
+    result_json = json.dumps(result)
+    
+    # export json
+    with open('result.json','w') as f:
+        f.write(result_json)
+    
+    print('consuming time (s):',end_time)
