@@ -1,6 +1,6 @@
 '''
-env/bin/python3 main.py -i path/to/your/image.jpg -d result.json
-python3 main.py -i path/to/your/image.jpg -d result.json
+env/bin/python3 utils/infer.py -i path/to/your/image.jpg -d result.json
+python3 utils/infer.py -i path/to/your/image.jpg -d result.json
 '''
 import cv2
 import time
@@ -38,12 +38,12 @@ postions = [] # crack position
 
 class TTAFrame():
     def __init__(self, net):
-        self.device = 'cpu' #'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.net = net().to(self.device)
         # self.net = torch.nn.DataParallel(self.net, device_ids=range(torch.cuda.device_count()))
         
     def load(self, path):
-        self.net.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+        self.net.load_state_dict(torch.load(path, map_location=torch.device(self.device)))
         #self.net.load_state_dict(torch.load(path))
 
     def predict(self, img):
