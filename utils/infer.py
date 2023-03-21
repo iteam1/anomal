@@ -56,12 +56,10 @@ class TTAFrame():
         img5 = np.concatenate([img3, img4]).transpose(0, 3, 1, 2)
         img5 = np.array(img5, np.float32) / 255.0 * 3.2 - 1.6
         img5 = V(torch.Tensor(img5).to(self.device))
-
         mask = self.net.forward(img5).squeeze().cpu().data.numpy()  # .squeeze(1)
         mask1 = mask[:4] + mask[4:, :, ::-1]
         mask2 = mask1[:2] + mask1[2:, ::-1]
         mask3 = mask2[0] + np.rot90(mask2[1])[::-1, ::-1]
-        
         # post process
         threshold = 3.0
         mask3[mask3 > threshold] = 255
@@ -285,18 +283,34 @@ def mask_img(input,side,solver):
     out = cv2.resize(out,(DIM,DIM),interpolation=cv2.INTER_AREA)
     roi = cv2.resize(roi,(DIM,DIM),interpolation=cv2.INTER_AREA)
     m = cv2.resize(m,(DIM,DIM),interpolation=cv2.INTER_AREA)
-    return out,roi,m
+    return out,roi,m,cord
 
 def predict(input,side,solver):
     label = None
+    
+    if side == 'left':
+        
     # resize image
     image = cv2.resize(input,(DIM,DIM),interpolation=cv2.INTER_AREA)
-    out,out_color,out_mask = mask_img(image,side,solver)
+    out,out_color,out_mask,cord = mask_img(image,side,solver)
     prediction = tester.predict(image=out)
     pred_label = prediction.pred_label
     pred_score = prediction.pred_score
     pred_mask = prediction.pred_mask
     final_mask = cv2.bitwise_and(out_mask,pred_mask)
+
+    # Finding Contours
+    blank = np.zeros(final_mask.shape)
+    contours, hierarchy = cv2.findContours(final_mask,cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for cnt in contours:
+        x,y,w,h = cv2.boundingRect(cnt)
+        cv2.rectangle(blank, (x, y), (x + w, y + h), (255),-1)
+    
+    contours, hierarchy = cv2.findContours(blank.astype('uint8'),cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for cnt in contours:
+        x,y,w,h = cv2.boundingRect(cnt)
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0,0,255),1)
+    
     anomaly_map = prediction.anomaly_map
     #fill mask
     anomaly_map = anomaly_map * (final_mask == 255)
@@ -314,6 +328,7 @@ def predict(input,side,solver):
         if area > T and anomal_value > TOTAL:                
             # conclude
             label = "crack"
+            cv2.imwrite(side+'_mask.jpg',image)
             return label,prediction
         else:
             # conclude
