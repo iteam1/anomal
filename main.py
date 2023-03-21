@@ -1,4 +1,5 @@
 '''
+env/bin/python3 main.py -i path/to/your/image.jpg -d result.json
 python3 main.py -i path/to/your/image.jpg -d result.json
 '''
 import cv2
