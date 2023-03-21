@@ -1,10 +1,11 @@
 '''
-python3 utils/predict.py samples/crack
+python3 main.py -i path/to/your/image.jpg -d result.json
 '''
-import os
-import sys
 import cv2
+import time
+import json
 import torch
+import argparse
 import numpy as np
 import torch.nn as nn
 from dinknet import DinkNet34
@@ -12,20 +13,28 @@ from torch.autograd import Variable as V
 from anomalib.deploy import TorchInferencer
 from skimage.morphology import closing,disk
 
-src = sys.argv[1]
-dst = 'results'
+# init parser
+parser = argparse.ArgumentParser(description = 'Anomal detection')
+# add argument to parser
+parser.add_argument('-i','--img',type = str, help = 'directory to image', required = True)
+parser.add_argument('-d','--dest',type = str, help = 'directory to save json file', required = True)
+parser.add_argument('-w','--write',action = 'store_true', help = 'option to save debug image',required=False)
+# create arguments
+args = parser.parse_args()
 
-# init
+# initialize
 THRESH1 = 0.50 # for inferencer anomal
 THRESH2 = 0.53 # for checker anomal
-THRESH3 = 0.5
-TOTAL = 400 # total anomaly score threshold
+THRESH3 = 0.5 # anomalt threhsold
+TOTAL = 450 # total anomaly score threshold
 P = 10
 K = 48 # corner window size
 DIM = 256 # image dimension size
 SHAPE = (DIM,DIM) # shape of image
 T = 250 # threshold of total white pixel range
-count = 0 # count anomalous
+label = 'normal' # prediction label
+postions = [] # crack position
+
 class TTAFrame():
     def __init__(self, net):
         self.device = 'cpu' #'cuda' if torch.cuda.is_available() else 'cpu'
@@ -301,7 +310,6 @@ def predict(input,side,solver):
             corner = final_mask[0:K,DIM-K:DIM]
         area = np.sum(corner)/255
         anomal_value = np.sum(anomal_value)
-        print(area,anomal_value)
         if area > T and anomal_value > TOTAL:                
             # conclude
             label = "crack"
@@ -315,13 +323,6 @@ def predict(input,side,solver):
         label = "normal"
         return label,prediction
 
-# model anomal model
-config_path = 'model/stfpm/mvtec/laptop/run/config.yaml'
-model_path = 'model/stfpm/mvtec/laptop/run/weights/model.ckpt'
-# config_path = 'model/ooo/mvtec/ooo/run/config.yaml'
-# model_path = 'model/ooo/mvtec/ooo/run/weights/model.ckpt'
-inferencer = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
-
 # load retest anomal model
 config_path = 'model/lim/mvtec/lim/run/config.yaml'
 model_path = 'model/lim/mvtec/lim/run/weights/model.ckpt'
@@ -333,42 +334,50 @@ solver.load('model/dsi/log01_dink34.th')
 
 if __name__ == "__main__":
     
-    # list all images
-    images = os.listdir(src)
-    n = len(images)
+    # start counting time
+    start_time = time.time()
+        
+    # read input image
+    img_org = cv2.imread(args.img)
+    H,W,_ = img_org.shape
+    top_left = img_org[0:DIM,0:DIM]
+    top_right = img_org[0:DIM,W-DIM:W]
     
-    # predict
-    for i,image in enumerate(images):
-        print(i+1,"/",n,":",image)
-        path = os.path.join(src,image)
+    # predict top left
+    label_left,prediction = predict(top_left,"left",solver)
+    if label_left == "crack":
+        postions.append('left')
+        result = post_process(prediction)
+        if args.write: cv2.imwrite('corner_left.jpg',result)
+    
+    # predict top right
+    label_right,prediction = predict(top_right,"right",solver)
+    if label_right == "crack":
+        postions.append('right')
+        result = post_process(prediction)
+        if args.write: cv2.imwrite('corner_right.jpg',result)
+    
+    # conclude
+    if label_left == 'crack' or label_right == 'crack':
+        label = "crack"
+        print(args.img,' ==> crack')
         
-        # read input image
-        img_org = cv2.imread(path)
-        H,W,_ = img_org.shape
-        top_left = img_org[0:DIM,0:DIM]
-        top_right = img_org[0:DIM,W-DIM:W]
-        
-        # predict top left
-        side = "left"
-        label_left,prediction = predict(top_left,side,solver)
-        if label_left == "crack":
-            result = post_process(prediction)
-            name = image.split('.')[0] + '_left.jpg'
-            path = os.path.join(dst,name)
-            cv2.imwrite(path,result)
-        
-        # predict top right
-        side = "right"
-        label_right,prediction = predict(top_right,side,solver)
-        if label_right == "crack":
-            result = post_process(prediction)
-            name = image.split('.')[0] + '_right.jpg'
-            path = os.path.join(dst,name)
-            cv2.imwrite(path,result)
-        
-        # conclude
-        if label_left == 'crack' or label_right == 'crack':
-            count +=1
-            print(image,' ==> crack')
-
-    print('Total crack:',count,'/',len(images))
+    # stop counting time
+    end_time = time.time() - start_time
+    end_time = round(end_time,3)
+    
+    # create result dictionary
+    result = {'image':args.img,
+              'prediction':label,
+              'positions': postions,
+              'consuming time': end_time
+              }
+    
+    # serializing to json
+    result_json = json.dumps(result)
+    
+    # export json
+    with open('result.json','w') as f:
+        f.write(result_json)
+    
+    print('consuming time (s):',end_time)

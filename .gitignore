@@ -15,7 +15,7 @@ __pycache__
 *.pd
 
 # floders
-env
+env*
 myconda
 anomalib
 hazelnut_toy
@@ -26,7 +26,7 @@ tmp
 test
 datasets
 result*
-model
+model*
 imgs
 sliced
 output

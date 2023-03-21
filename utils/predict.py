@@ -328,10 +328,6 @@ def predict(input,side,solver):
         label = "normal"
         return label,prediction
                 
-# load dsi model
-solver = TTAFrame(DinkNet34)
-solver.load('model/dsi/log01_dink34.th')
-
 # model anomal model
 config_path = 'model/stfpm/mvtec/laptop/run/config.yaml'
 model_path = 'model/stfpm/mvtec/laptop/run/weights/model.ckpt'
