@@ -361,7 +361,8 @@ if __name__ == "__main__":
     # conclude
     if label_left == 'crack' or label_right == 'crack':
         label = "crack"
-        print(args.img,' ==> crack')
+    
+    print(args.img,' ==> ',label)
         
     # stop counting time
     end_time = time.time() - start_time
