@@ -35,7 +35,7 @@ SHAPE = (DIM,DIM) # shape of image
 T = 250 # threshold of total white pixel range
 label = 'normal' # prediction label
 postions = [] # crack position
-
+rois = [] # crack region (x,y,w,h) left side and right side
 class TTAFrame():
     def __init__(self, net):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -286,13 +286,26 @@ def mask_img(input,side,solver):
     return out,roi,m,cord
 
 def predict(input,side,solver):
-    label = None
+    label = None # label of prediction
+    rect = None # rectangle of crack
+    rects = []
+    areas = []
+    distances = []
     
-    if side == 'left':
-        
     # resize image
     image = cv2.resize(input,(DIM,DIM),interpolation=cv2.INTER_AREA)
     out,out_color,out_mask,cord = mask_img(image,side,solver)
+    
+    # choose padding and top_point
+    if side == 'left':
+        top_point = (0,0)
+        py,px = cord
+    else:
+        top_point = (DIM,0) # x,y
+        py,px = cord
+        px = - (DIM - px)
+    
+    # predict
     prediction = tester.predict(image=out)
     pred_label = prediction.pred_label
     pred_score = prediction.pred_score
@@ -309,10 +322,22 @@ def predict(input,side,solver):
     contours, hierarchy = cv2.findContours(blank.astype('uint8'),cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for cnt in contours:
         x,y,w,h = cv2.boundingRect(cnt)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0,0,255),1)
-    
+        xc = x+w/2
+        yc = y+h/2
+        s = w*h
+        d = np.sqrt((xc-top_point[0])**2 + (yc-top_point[1])**2)
+        areas.append(s)
+        distances.append(d)
+        rects.append((int(x),int(y),int(w),int(h))) # convert int64 to int16 for json serialize
+        # image = cv2.circle(image,(x,y),3,(255),-1)
+        # image = cv2.line(image,(int(xc),int(yc)),top_point,(255),2)
+        
+    #cv2.imwrite('image.jpg',image)
+    idx = np.argmin(distances)
+    rect = rects[idx]
+
+    # check anomaly map
     anomaly_map = prediction.anomaly_map
-    #fill mask
     anomaly_map = anomaly_map * (final_mask == 255)
     anomaly_map = anomaly_map * (anomaly_map>THRESH3)
     if pred_label == 'Anomalous' and pred_score > THRESH2:
@@ -328,20 +353,19 @@ def predict(input,side,solver):
         if area > T and anomal_value > TOTAL:                
             # conclude
             label = "crack"
-            cv2.imwrite(side+'_mask.jpg',image)
-            return label,prediction
+            return label,prediction,rect
         else:
             # conclude
             label = "normal"
-            return label,prediction
+            return label,prediction,rect
     else:
         # conclude
         label = "normal"
-        return label,prediction
+        return label,prediction,rect
 
 # load retest anomal model
-config_path = 'model/lim/mvtec/lim/run/config.yaml'
-model_path = 'model/lim/mvtec/lim/run/weights/model.ckpt'
+config_path = 'model/lim/config.yaml'
+model_path = 'model/lim/model.ckpt'
 tester = TorchInferencer(config=config_path,model_source=model_path,device ='auto')
 
 # load dsi model
@@ -360,18 +384,32 @@ if __name__ == "__main__":
     top_right = img_org[0:DIM,W-DIM:W]
     
     # predict top left
-    label_left,prediction = predict(top_left,"left",solver)
+    label_left,prediction,rect = predict(top_left,"left",solver)
     if label_left == "crack":
         postions.append('left')
         result = post_process(prediction)
-        if args.write: cv2.imwrite('corner_left.jpg',result)
+        if args.write:
+            if rect:
+                x,y,w,h = rect
+                cv2.rectangle(top_left, (x, y), (x + w, y + h), (0,0,255),1)
+                cv2.imwrite('top_left.jpg',top_left)
+                rois.append(rect)
+            #cv2.imwrite('corner_left.jpg',result)
     
     # predict top right
-    label_right,prediction = predict(top_right,"right",solver)
+    label_right,prediction,rect = predict(top_right,"right",solver)
     if label_right == "crack":
         postions.append('right')
         result = post_process(prediction)
-        if args.write: cv2.imwrite('corner_right.jpg',result)
+        if args.write:
+            if rect:
+                x,y,w,h = rect
+                cv2.rectangle(top_right, (x, y), (x + w, y + h), (0,0,255),1)
+                cv2.imwrite('top_right.jpg',top_right)
+                x = W - DIM + x # convert to full image cordinate
+                rect = (x,y,w,h)
+                rois.append(rect)
+            #cv2.imwrite('corner_right.jpg',result)
     
     # conclude
     if label_left == 'crack' or label_right == 'crack':
@@ -387,6 +425,7 @@ if __name__ == "__main__":
     result = {'image':args.img,
               'prediction':label,
               'positions': postions,
+              'rois':rois,
               'consuming time': end_time
               }
     
