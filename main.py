@@ -392,10 +392,10 @@ if __name__ == "__main__":
         if rect:
             x,y,w,h = rect
             cv2.rectangle(top_left, (x, y), (x + w, y + h), (0,0,255),1)
-            cv2.imwrite('top_left.jpg',top_left)
             rois.append(rect)
         if args.write:
-            cv2.imwrite('corner_left.jpg',result)
+            cv2.imwrite('top_left.jpg',top_left)
+            #cv2.imwrite('corner_left.jpg',result)
     
     # predict top right
     label_right,prediction,rect = predict(top_right,"right",solver)
@@ -405,12 +405,12 @@ if __name__ == "__main__":
         if rect:
             x,y,w,h = rect
             cv2.rectangle(top_right, (x, y), (x + w, y + h), (0,0,255),1)
-            cv2.imwrite('top_right.jpg',top_right)
             x = W - DIM + x # convert to full image cordinate
             rect = (x,y,w,h)
             rois.append(rect)
         if args.write:
-            cv2.imwrite('corner_right.jpg',result)
+            cv2.imwrite('top_right.jpg',top_right)
+            #cv2.imwrite('corner_right.jpg',result)
     
     # conclude
     if label_left == 'crack' or label_right == 'crack':
