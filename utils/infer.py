@@ -1,6 +1,6 @@
 '''
-env/bin/python3 utils/infer.py -i path/to/your/image.jpg -d result.json
-python3 utils/infer.py -i path/to/your/image.jpg -d result.json
+env/bin/python3 utils/infer.py -w -i path/to/your/image.jpg
+python3 utils/infer.py -w -i path/to/your/image.jpg
 '''
 import cv2
 import time
@@ -18,7 +18,7 @@ from skimage.morphology import closing,disk
 parser = argparse.ArgumentParser(description = 'Anomal detection')
 # add argument to parser
 parser.add_argument('-i','--img',type = str, help = 'directory to image', required = True)
-parser.add_argument('-d','--dest',type = str, help = 'directory to save json file', required = True)
+# parser.add_argument('-d','--dest',type = str, help = 'directory to save json file', required = True)
 parser.add_argument('-w','--write',action = 'store_true', help = 'option to save debug image',required=False)
 # create arguments
 args = parser.parse_args()
@@ -333,8 +333,9 @@ def predict(input,side,solver):
         # image = cv2.line(image,(int(xc),int(yc)),top_point,(255),2)
         
     #cv2.imwrite('image.jpg',image)
-    idx = np.argmin(distances)
-    rect = rects[idx]
+    if len(distances) != 0:
+        idx = np.argmin(distances)
+        rect = rects[idx]
 
     # check anomaly map
     anomaly_map = prediction.anomaly_map
@@ -388,12 +389,12 @@ if __name__ == "__main__":
     if label_left == "crack":
         postions.append('left')
         result = post_process(prediction)
+        if rect:
+            x,y,w,h = rect
+            cv2.rectangle(top_left, (x, y), (x + w, y + h), (0,0,255),1)
+            rois.append(rect)
         if args.write:
-            if rect:
-                x,y,w,h = rect
-                cv2.rectangle(top_left, (x, y), (x + w, y + h), (0,0,255),1)
-                cv2.imwrite('top_left.jpg',top_left)
-                rois.append(rect)
+            cv2.imwrite('top_left.jpg',top_left)
             #cv2.imwrite('corner_left.jpg',result)
     
     # predict top right
@@ -401,14 +402,14 @@ if __name__ == "__main__":
     if label_right == "crack":
         postions.append('right')
         result = post_process(prediction)
+        if rect:
+            x,y,w,h = rect
+            cv2.rectangle(top_right, (x, y), (x + w, y + h), (0,0,255),1)
+            x = W - DIM + x # convert to full image cordinate
+            rect = (x,y,w,h)
+            rois.append(rect)
         if args.write:
-            if rect:
-                x,y,w,h = rect
-                cv2.rectangle(top_right, (x, y), (x + w, y + h), (0,0,255),1)
-                cv2.imwrite('top_right.jpg',top_right)
-                x = W - DIM + x # convert to full image cordinate
-                rect = (x,y,w,h)
-                rois.append(rect)
+            cv2.imwrite('top_right.jpg',top_right)
             #cv2.imwrite('corner_right.jpg',result)
     
     # conclude
