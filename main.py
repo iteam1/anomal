@@ -18,7 +18,7 @@ from skimage.morphology import closing,disk
 parser = argparse.ArgumentParser(description = 'Anomal detection')
 # add argument to parser
 parser.add_argument('-i','--img',type = str, help = 'directory to image', required = True)
-# parser.add_argument('-d','--dest',type = str, help = 'directory to save json file', required = True)
+parser.add_argument('-d','--device',type = str, choices = ['cpu','cuda'],help = 'device CPU or GPU', default = 'cpu')
 parser.add_argument('-w','--write',action = 'store_true', help = 'option to save debug image',required=False)
 # create arguments
 args = parser.parse_args()
@@ -39,8 +39,11 @@ rois = [] # crack region (x,y,w,h) left side and right side
 class TTAFrame():
     def __init__(self, net):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if self.device != args.device:
+            self.device = 'cpu'
         self.net = net().to(self.device)
         # self.net = torch.nn.DataParallel(self.net, device_ids=range(torch.cuda.device_count()))
+        print('Running by:',self.device)
         
     def load(self, path):
         self.net.load_state_dict(torch.load(path, map_location=torch.device(self.device)))
